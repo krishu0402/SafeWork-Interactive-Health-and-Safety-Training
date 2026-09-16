@@ -3,50 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SafeWork Worker Portal | Week 7 prototype</title>
+  <title>SafeWork – Worker sign in</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div class="banner">Worker / Trainee portal · simulated login · sample data only · SafeWork A7 prototype</div>
+  <div class="banner">SafeWork · Worker training</div>
 
   <div id="login" class="login-wrap">
     <div class="login">
-      <a class="back" href="index.html">← Both portals</a>
+      <a class="back" href="index.html">← All workspaces</a>
       <div class="brand"><span class="mark">S</span>SafeWork</div>
-      <h1>Worker training portal</h1>
-      <p>Warehouse staff sign in here to complete assigned safety training.</p>
-      <label for="w-email">Email</label>
-      <input id="w-email" value="alex.kumar@warehouse.example">
+      <h1>Worker sign in</h1>
+      <p>Complete the safety training assigned to your shift.</p>
+      <label for="w-email">Work email</label>
+      <input id="w-email" value="alex.kumar@northgate-logistics.com" autocomplete="username">
       <label for="w-pass">Password</label>
-      <input id="w-pass" type="password" value="safework">
-      <button class="btn btn-primary btn-wide" onclick="workerLogin()">Sign in to prototype</button>
-      <p class="note">FR01 is simulated. Any details work. Nothing is sent to a server. This is not a real account.</p>
+      <input id="w-pass" type="password" value="safework" autocomplete="current-password">
+      <button class="btn btn-primary btn-wide" onclick="workerLogin()">Sign in</button>
+      <p class="note">Use the email provided by your supervisor. Forgotten password? Speak to your shift lead.</p>
     </div>
   </div>
 
   <div id="app" class="hidden">
     <header class="top">
-      <div class="brand"><a href="index.html" class="brand-link"><span class="mark">S</span>SafeWork</a> <span class="pill">Worker prototype</span></div>
-      <div>Alex Kumar · Trainee &nbsp; <a class="btn btn-ghost" href="index.html">Both portals</a> <button class="btn btn-secondary" onclick="workerLogout()">Sign out</button></div>
+      <div class="brand"><a href="index.html" class="brand-link"><span class="mark">S</span>SafeWork</a> <span class="pill">Worker</span></div>
+      <div>Alex Kumar · Inbound &nbsp; <a class="btn btn-ghost" href="index.html">Switch workspace</a> <button class="btn btn-secondary" onclick="workerLogout()">Sign out</button></div>
     </header>
     <div class="layout">
       <aside class="side">
-        <button data-p="dashboard" class="active" onclick="page('dashboard')">Dashboard</button>
-        <button data-p="training" onclick="page('training')">Training modules</button>
-        <button data-p="scenario" onclick="page('scenario')">Quiz &amp; scenarios</button>
+        <button data-p="dashboard" class="active" onclick="page('dashboard')">Home</button>
+        <button data-p="training" onclick="page('training')">My training</button>
+        <button data-p="scenario" onclick="page('scenario')">Scenarios</button>
         <button data-p="progress" onclick="page('progress')">My progress</button>
-        <button class="soon" onclick="coming('Certificates (FR10) are not in Week 7. Planned for B6 after client confirmation.')">Certificates · later</button>
-        <button class="soon" onclick="coming('Reminders (FR12) are not in Week 7. Planned for B6.')">Reminders · later</button>
+        <button class="soon" onclick="coming('Certificates will appear here once you pass a module. This is being prepared for your site.')">Certificates</button>
+        <button class="soon" onclick="coming('Overdue training reminders will be sent to your work email. Not enabled yet.')">Reminders</button>
       </aside>
       <main class="main">
         <section id="dashboard" class="page">
           <h1 class="title">Good morning, Alex</h1>
-          <p class="sub">Personal training status using sample records (FR02). Refreshing the page resets this prototype.</p>
+          <p class="sub">Inbound / receiving · Northgate Logistics</p>
           <div class="grid stats">
             <div class="card"><div class="label">Overall progress</div><div class="value">68%</div><span class="pill">On track</span></div>
-            <div class="card"><div class="label">Modules completed</div><div class="value">2 / 4</div><span class="pill ok">Sample data</span></div>
-            <div class="card"><div class="label">Scenario score</div><div class="value">80%</div><span class="pill ok">Passed</span></div>
-            <div class="card"><div class="label">Training due</div><div class="value">1</div><span class="pill warn">This week</span></div>
+            <div class="card"><div class="label">Modules completed</div><div class="value">2 / 4</div><span class="pill ok">This quarter</span></div>
+            <div class="card"><div class="label">Last scenario score</div><div class="value">80%</div><span class="pill ok">Passed</span></div>
+            <div class="card"><div class="label">Due this week</div><div class="value">1</div><span class="pill warn">Manual handling</span></div>
           </div>
           <div class="grid two" style="margin-top:16px">
             <div class="card">
@@ -54,7 +54,7 @@
               <div class="module">
                 <div>
                   <h3>Manual Handling Safety</h3>
-                  <p>Working Week 7 path: scenario, decision, feedback</p>
+                  <p>Assess the load, choose a safe lift, finish the check</p>
                 </div>
                 <button class="btn btn-primary" onclick="page('scenario')">Continue</button>
               </div>
@@ -62,15 +62,15 @@
             </div>
             <div class="card">
               <h2>Alerts</h2>
-              <div class="alert"><b>Manual Handling</b><br>Complete the assessment to finish this module.</div>
-              <div class="alert" style="border-color:#2563eb;background:#eff6ff">PPE Refresher is listed as recommended. Full PPE module is preview-only in this build.</div>
+              <div class="alert"><b>Manual Handling</b><br>Finish the assessment to complete this module before Friday.</div>
+              <div class="alert" style="border-color:#2563eb;background:#eff6ff">PPE refresher is recommended for your role. Full lessons open soon.</div>
             </div>
           </div>
         </section>
 
         <section id="training" class="page hidden">
-          <h1 class="title">Training modules</h1>
-          <p class="sub">FR03: Manual Handling is open. Other topics show the intended catalogue only (FR13 browser prototype).</p>
+          <h1 class="title">My training</h1>
+          <p class="sub">Courses assigned to your role. Open Manual Handling to continue.</p>
           <div class="grid two">
             <div class="card">
               <h2>Assigned to you</h2>
@@ -80,36 +80,36 @@
               </div>
               <div class="module">
                 <div><h3>Forklift Safety</h3><p>Vehicle awareness and pedestrian zones</p></div>
-                <button class="btn btn-secondary" onclick="coming('Forklift Safety is preview-only. Full lessons are for B6 if the client confirms this as the next module.')">Preview</button>
+                <button class="btn btn-secondary" onclick="coming('Forklift Safety is scheduled for your site. Manual Handling is available now.')">Coming soon</button>
               </div>
               <div class="module">
                 <div><h3>Personal Protective Equipment</h3><p>PPE selection, inspection and use</p></div>
-                <button class="btn btn-secondary" onclick="coming('PPE module is not built in Week 7. Shown so the client can confirm priority.')">Preview</button>
+                <button class="btn btn-secondary" onclick="coming('The full PPE course will open after Manual Handling is complete.')">Coming soon</button>
               </div>
               <div class="module">
                 <div><h3>Fire Safety</h3><p>Emergency response and evacuation</p></div>
-                <button class="btn btn-secondary" onclick="coming('Fire Safety is not built in Week 7.')">Preview</button>
+                <button class="btn btn-secondary" onclick="coming('Fire Safety will be released in a later training cycle.')">Coming soon</button>
               </div>
             </div>
             <div class="card">
-              <h2>Learning journey</h2>
-              <div class="bar"><div class="barhead"><span>1. Select training</span><b>✓</b></div><div class="progress"><span style="width:100%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>2. Explore scenarios</span><b>✓</b></div><div class="progress"><span style="width:100%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>3. Make decisions</span><b>Current</b></div><div class="progress"><span style="width:65%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>4. Receive feedback</span><b>Next</b></div><div class="progress"><span style="width:0%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>5. Complete assessment</span><b>Next</b></div><div class="progress"><span style="width:0%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>6. Track progress</span><b>Next</b></div><div class="progress"><span style="width:0%"></span></div></div>
-              <div class="coming" style="margin-top:14px">360° warehouse / VR (FR14) is out of Week 7 scope. Clickable 2D scene only.</div>
+              <h2>How training works</h2>
+              <div class="bar"><div class="barhead"><span>1. Open your module</span><b>✓</b></div><div class="progress"><span style="width:100%"></span></div></div>
+              <div class="bar"><div class="barhead"><span>2. Walk through the warehouse scene</span><b>✓</b></div><div class="progress"><span style="width:100%"></span></div></div>
+              <div class="bar"><div class="barhead"><span>3. Choose the safest action</span><b>Current</b></div><div class="progress"><span style="width:65%"></span></div></div>
+              <div class="bar"><div class="barhead"><span>4. Get feedback</span><b>Next</b></div><div class="progress"><span style="width:0%"></span></div></div>
+              <div class="bar"><div class="barhead"><span>5. Finish the assessment</span><b>Next</b></div><div class="progress"><span style="width:0%"></span></div></div>
+              <div class="bar"><div class="barhead"><span>6. Track your progress</span><b>Next</b></div><div class="progress"><span style="width:0%"></span></div></div>
+              <div class="coming" style="margin-top:14px">A 360° warehouse walkthrough is planned. Today you use the interactive floor scene.</div>
             </div>
           </div>
         </section>
 
         <section id="scenario" class="page hidden">
-          <h1 class="title">Manual Handling scenario</h1>
-          <p class="sub">FR04–FR07: identify the issue and choose the safest action. One question in this prototype.</p>
+          <h1 class="title">Manual handling scenario</h1>
+          <p class="sub">Look at the aisle, then choose the safest action before lifting.</p>
           <div class="scenario">
             <div class="scene">
-              <div class="scene-label">WAREHOUSE SCENARIO · CLICKABLE HAZARDS</div>
+              <div class="scene-label">INBOUND AISLE · GOODS-IN</div>
               <div class="haz h1">Hazard</div>
               <div class="haz h2">Load</div>
               <div class="rack"></div>
@@ -119,22 +119,22 @@
               <div class="worker">👷</div>
             </div>
             <div class="card">
-              <span class="pill">Scenario 1 of 2 · Week 7</span>
-              <h2>What should the worker do before lifting the load?</h2>
-              <p class="sub">Choose the action that best reduces manual-handling risk.</p>
+              <span class="pill">Scenario 1 of 2</span>
+              <h2>What should you do before lifting this load?</h2>
+              <p class="sub">Choose the action that best reduces the risk of injury.</p>
               <button class="choice" onclick="answer(false)">A. Lift immediately using the back</button>
               <button class="choice" onclick="answer(true)">B. Assess the load and use the correct lifting technique</button>
               <button class="choice" onclick="answer(false)">C. Twist while lifting to save time</button>
               <button class="choice" onclick="answer(false)">D. Carry the load above shoulder height</button>
               <div id="feedback" class="feedback hidden"></div>
-              <button id="next" class="btn btn-primary hidden" style="margin-top:10px" onclick="page('progress')">Continue to progress</button>
+              <button id="next" class="btn btn-primary hidden" style="margin-top:10px" onclick="page('progress')">See my progress</button>
             </div>
           </div>
         </section>
 
         <section id="progress" class="page hidden">
           <h1 class="title">My progress</h1>
-          <p class="sub">FR08: completion view for this demo. Scores are not stored after refresh.</p>
+          <p class="sub">Your training record for this site. Speak to your supervisor if a due date looks wrong.</p>
           <div class="grid stats">
             <div class="card"><div class="label">Completion</div><div class="value">68%</div></div>
             <div class="card"><div class="label">Average score</div><div class="value">82%</div></div>
@@ -142,7 +142,7 @@
             <div class="card"><div class="label">Overdue</div><div class="value">0</div></div>
           </div>
           <div class="card" style="margin-top:16px">
-            <h2>Module progress</h2>
+            <h2>Module status</h2>
             <table class="table">
               <tr><th>Module</th><th>Status</th><th>Progress</th><th>Score</th></tr>
               <tr><td>Manual Handling</td><td><span class="pill warn">In progress</span></td><td>75%</td><td>80%</td></tr>
@@ -151,7 +151,7 @@
               <tr><td>Fire Safety</td><td><span class="pill">Not started</span></td><td>0%</td><td>—</td></tr>
             </table>
           </div>
-          <div class="coming" style="margin-top:16px">Downloadable certificates (FR10) and overdue reminders (FR12) are intentionally omitted so the client can confirm pass marks, due dates and certificate format in B6.</div>
+          <div class="coming" style="margin-top:16px">Downloadable certificates and overdue email reminders will be added once your site confirms pass marks and due dates.</div>
         </section>
       </main>
     </div>

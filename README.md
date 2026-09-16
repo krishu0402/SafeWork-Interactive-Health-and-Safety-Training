@@ -50,7 +50,7 @@ Admin screens show the **shape** of FR09 (reports) and FR11 (content tools) with
 - `index.html` — two-portal entry
 - `worker.html` — trainee journey
 - `admin.html` — supervisor / administrator mock portal
-- `css/style.css`, `js/app.js`
+- `css/styles.css`, `js/app.js`
 - `A7-SPEAKER-NOTES.md` — Krishu demo script and full session plan
 
 Prototype UI: Krishu Kandel (Developer and UI Support).

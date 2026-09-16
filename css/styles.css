@@ -48,6 +48,7 @@ button { cursor: pointer; border: 0; }
   padding: 0 22px;
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--navy); font-size: 18px; }
+.brand-link { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
 .mark {
   width: 36px; height: 36px; border-radius: 10px;
   background: var(--navy); color: #fff;

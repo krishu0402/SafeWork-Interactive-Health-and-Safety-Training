@@ -42,25 +42,22 @@ Keep the demo inside 7 minutes so the client can talk.
 
 ## Krishu — live demo script
 
-Speak slowly. Do not apologise for unfinished screens; **label them as Week 7 on purpose**.
+Speak slowly. On screen, **never** say FR codes, A7, or “prototype”. Talk as if this is their warehouse system. Keep requirement IDs for the team only.
 
 ### 1. Portal choice (`index.html`) — 45 seconds
 
-> “This is the SafeWork **client system**, not our company marketing site.  
-> We have given you **two entry screens**, like CEMS: students on one side, staff on the other.  
-> **Portal A** is for general workers completing training.  
-> **Portal B** is for supervisors and administrators.  
-> Nothing is stored on a server yet. If we refresh, the demo resets. That is intentional for Assignment 1.”
+> “This is **SafeWork**, the training platform for your warehouse.  
+> Workers complete courses on one side. Supervisors and administrators manage the site on the other — the same idea as a student portal and a staff portal.  
+> We have started with the worker journey and a staff overview. Remaining modules and certificates can follow your priorities.”
 
-Click **Enter worker portal**.
+Click **Sign in as a worker**.
 
 ### 2. Worker login — 30 seconds
 
-> “FR01 is a login screen so staff feel they have their own space.  
-> Email and password are simulated. We are **not** claiming encrypted accounts today.  
-> That is one of the items we want you to confirm for the next build.”
+> “Each worker signs in with their work email so they only see their own training.  
+> For this walkthrough we are using Alex Kumar in inbound.”
 
-Click **Sign in to training**. Stay on **Alex Kumar**.
+Click **Sign in**. Stay on **Alex Kumar**.
 
 ### 3. Dashboard — 45 seconds
 
@@ -78,7 +75,7 @@ Click **Continue**.
 > Forklift, PPE and Fire are listed but Preview-only.  
 > We did not fake a finished catalogue. You can tell us the order of the remaining modules.”
 
-Click **Preview** once so the yellow toast appears, then **Open** on Manual Handling (or go to Quiz & scenario).
+Click **Coming soon** once so the toast appears, then **Open** on Manual Handling (or go to Scenarios).
 
 ### 5. Scenario + feedback — 2 minutes (core of the demo)
 
@@ -90,18 +87,18 @@ If time: refresh is not needed; click **A** on a second pass only if you re-open
 
 > “The pass mark, exact duration and full hazard list are still open (our clarification OC03). Please tell us what ‘pass’ means for your sites.”
 
-Click **Continue to progress**.
+Click **See my progress**.
 
 ### 6. Progress — 30 seconds
 
 > “Workers can see module status. This table does **not** save.  
 > Certificates and reminders are not here. We can add them after you confirm they are required.”
 
-Click **Certificate** in the side menu so the B6 toast shows.
+Click **Certificates** in the side menu so the coming-soon toast shows.
 
 ### 7. Switch portal — 20 seconds
 
-Click **SafeWork** in the header (or Back to portal choice). Then **Enter admin portal**.
+Click **Switch workspace** (or the SafeWork logo). Then **Sign in as staff**.
 
 > “Workers should not manage other people. Today they still *could* open this file — that lock is B6. We are showing you the second door so you can say how staff should work.”
 
@@ -112,7 +109,7 @@ Sign in as **Supervisor** first.
 > “This is the shape of a CEMS staff view: team completion, overdue people, dummy names.  
 > Supervisors would mainly **watch**. Administrators would **edit content**.”
 
-Open **Workforce**, point at Add worker (toast). Then sign-out is optional; instead open **Content**.
+Open **People**, point at Add worker (toast). Then sign-out is optional; instead open **Content**.
 
 If you logged in as Supervisor, mention:
 
