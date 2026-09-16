@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SafeWork Staff Portal | Week 7 prototype</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="banner">Admin / Supervisor portal · shape only · FR09 and FR11 mocked · OC02 still open · SafeWork A7 prototype</div>
+
+  <div id="login" class="login-wrap">
+    <div class="login">
+      <a class="back" href="index.html">← Both portals</a>
+      <div class="brand"><span class="mark">S</span>SafeWork</div>
+      <h1>Staff portal</h1>
+      <p>Supervisors and administrators sign in here. Workers should not use this door.</p>
+      <label for="role">Intended staff role</label>
+      <select id="role">
+        <option value="supervisor">Supervisor (view team; limited)</option>
+        <option value="admin">Administrator (users + content)</option>
+      </select>
+      <label for="a-email">Email</label>
+      <input id="a-email" value="jordan.lee@warehouse.example">
+      <label for="a-pass">Password</label>
+      <input id="a-pass" type="password" value="safework">
+      <button class="btn btn-primary btn-wide" onclick="staffLogin()">Sign in to prototype</button>
+      <p class="note">Roles are not locked. This dropdown exists so the client can tell us whether Supervisor must be separate from Administrator (A1 outstanding item OC02).</p>
+    </div>
+  </div>
+
+  <div id="app" class="hidden">
+    <header class="top">
+      <div class="brand"><span class="mark">S</span>SafeWork <span class="pill">Staff prototype</span></div>
+      <div><span id="roleText">Supervisor</span> · Jordan Lee &nbsp; <button class="btn btn-secondary" onclick="staffLogout()">Sign out</button></div>
+    </header>
+    <div class="layout">
+      <aside class="side">
+        <button data-p="overview" class="active" onclick="page('overview')">Team overview</button>
+        <button data-p="people" onclick="page('people')">People</button>
+        <button data-p="content" onclick="page('content')">Content</button>
+        <button class="soon" onclick="coming('Exportable compliance reports are not live. Dummy charts only in Week 7.')">Export reports · later</button>
+        <button class="soon" onclick="coming('Issue / revoke certificates (FR10) is planned for B6.')">Certificates · later</button>
+      </aside>
+      <main class="main">
+        <section id="overview" class="page">
+          <h1 class="title">Team overview</h1>
+          <p class="sub">FR09 reporting dashboard as mock numbers. Not connected to worker activity.</p>
+          <div class="grid stats">
+            <div class="card"><div class="label">Active users</div><div class="value">128</div><span class="pill ok">Sample</span></div>
+            <div class="card"><div class="label">Completion</div><div class="value">71%</div><span class="pill">This month</span></div>
+            <div class="card"><div class="label">Overdue</div><div class="value">6</div><span class="pill warn">Needs follow-up</span></div>
+            <div class="card"><div class="label">Pending reviews</div><div class="value">3</div><span class="pill warn">Action needed</span></div>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <h2>Shift-group snapshot</h2>
+            <table class="table">
+              <tr><th>Group</th><th>Assigned</th><th>Complete</th><th>Average score</th></tr>
+              <tr><td>Inbound / receiving</td><td>34</td><td>28</td><td>84%</td></tr>
+              <tr><td>Put-away / racking</td><td>41</td><td>29</td><td>79%</td></tr>
+              <tr><td>Dispatch</td><td>36</td><td>31</td><td>88%</td></tr>
+              <tr><td>Agency / nights</td><td>17</td><td>9</td><td>72%</td></tr>
+            </table>
+          </div>
+        </section>
+
+        <section id="people" class="page hidden">
+          <h1 class="title">People</h1>
+          <p class="sub">Dummy workforce list. Add, remove, assign and due dates are not implemented.</p>
+          <div class="card">
+            <table class="table">
+              <tr><th>User</th><th>Role</th><th>Status</th><th>Due</th></tr>
+              <tr><td>Alex Kumar</td><td>Worker</td><td>Manual Handling in progress</td><td>This week</td></tr>
+              <tr><td>Sam Patel</td><td>Worker</td><td>Training due</td><td>Overdue</td></tr>
+              <tr><td>Riley Chen</td><td>Worker</td><td>Forklift complete</td><td>—</td></tr>
+              <tr><td>Jordan Lee</td><td>Supervisor</td><td>Staff account</td><td>—</td></tr>
+            </table>
+            <p style="margin-top:14px">
+              <button class="btn btn-primary" onclick="coming('Add / remove workers and assign modules will be built in B6 if the client confirms this staff portal.')">Add worker</button>
+              <button class="btn btn-secondary" onclick="coming('Assign module and due date is a placeholder.')">Assign module</button>
+            </p>
+          </div>
+        </section>
+
+        <section id="content" class="page hidden">
+          <h1 class="title">Content management</h1>
+          <p class="sub">FR11 shape only. Administrators should later edit modules without a developer. Edit buttons do not save.</p>
+          <div class="grid two">
+            <div class="card">
+              <h2>Published modules</h2>
+              <div class="module"><div><h3>Manual Handling</h3><p>6 lessons · 2 scenarios · Week 7 demo content</p></div><button class="btn btn-secondary" onclick="coming('Edit module is not wired. Week 7 shows the CMS idea only.')">Edit</button></div>
+              <div class="module"><div><h3>Forklift Safety</h3><p>5 lessons · 3 scenarios · preview</p></div><button class="btn btn-secondary" onclick="coming('Edit module is not wired.')">Edit</button></div>
+              <div class="module"><div><h3>PPE</h3><p>4 lessons · 1 scenario · preview</p></div><button class="btn btn-secondary" onclick="coming('Edit module is not wired.')">Edit</button></div>
+              <button class="btn btn-primary" onclick="coming('Create module is planned for B6.')">+ Create module</button>
+            </div>
+            <div class="coming">
+              <b>Ask the client after this demo</b>
+              <p>Should Supervisor only view team progress, while Administrator manages users and content? Should staff be blocked from worker quizzes? Do you need exportable certificates and reminders? Those answers become the B6 build.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
