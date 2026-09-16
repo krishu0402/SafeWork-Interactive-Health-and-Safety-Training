@@ -1,27 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+
 :root {
-  --navy: #0b1730;
-  --navy-2: #132447;
-  --cyan: #22d3ee;
-  --blue: #2563eb;
-  --yellow: #f5c518;
-  --bg: #eef3f9;
-  --text: #142033;
-  --muted: #5b6b80;
-  --line: #d7e0ea;
-  --green: #15803d;
-  --red: #b91c1c;
-  --amber: #b45309;
+  --navy: #1e1b4b;
+  --navy-2: #312e81;
+  --cyan: #38bdf8;
+  --blue: #4f46e5;
+  --yellow: #f59e0b;
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --green: #059669;
+  --red: #dc2626;
+  --amber: #ea580c;
   --white: #ffffff;
-  --shadow: 0 12px 32px rgba(11, 23, 48, 0.08);
+  --shadow: 0 20px 40px rgba(30, 27, 75, 0.12);
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: 'Poppins', sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.45;
+  line-height: 1.6;
 }
 button, input, select { font: inherit; }
 a { color: inherit; }
@@ -70,14 +72,18 @@ button { cursor: pointer; border: 0; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  padding: 10px 16px; border-radius: 10px; font-weight: 700;
+  padding: 12px 24px; border-radius: 999px; font-weight: 700;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
 }
-.btn-primary { background: var(--blue); color: #fff; }
-.btn-primary:hover { filter: brightness(1.05); }
-.btn-secondary { background: #e8eef6; color: #1e293b; }
+.btn-primary { background: linear-gradient(135deg, var(--blue), var(--navy-2)); color: #fff; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
+.btn-secondary { background: #e2e8f0; color: #1e293b; }
+.btn-secondary:hover { background: #cbd5e1; }
 .btn-ghost { background: transparent; color: #334155; border: 1px solid var(--line); }
+.btn-ghost:hover { background: #f1f5f9; }
 .btn-wide { width: 100%; }
-.btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+.btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none; }
 
 /* Portal chooser */
 .chooser {
