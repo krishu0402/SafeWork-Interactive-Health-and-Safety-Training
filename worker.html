@@ -17,10 +17,12 @@
       <p>Complete the safety training assigned to your shift.</p>
       <label for="w-email">Work email</label>
       <input id="w-email" value="alex.kumar@northgate-logistics.com" autocomplete="username">
+      <div id="w-email-err" class="field-err"></div>
       <label for="w-pass">Password</label>
       <input id="w-pass" type="password" value="safework" autocomplete="current-password">
+      <div id="w-pass-err" class="field-err"></div>
       <button class="btn btn-primary btn-wide" onclick="workerLogin()">Sign in</button>
-      <p class="note">Use the email provided by your supervisor. Forgotten password? Speak to your shift lead.</p>
+      <p class="note">Demo validates format only (valid-looking email, 4+ character password) — no real account system yet (see README).</p>
     </div>
   </div>
 
@@ -33,20 +35,19 @@
       <aside class="side">
         <button data-p="dashboard" class="active" onclick="page('dashboard')">Home</button>
         <button data-p="training" onclick="page('training')">My training</button>
-        <button data-p="scenario" onclick="page('scenario')">Scenarios</button>
         <button data-p="progress" onclick="page('progress')">My progress</button>
-        <button class="soon" onclick="coming('Certificates will appear here once you pass a module. This is being prepared for your site.')">Certificates</button>
-        <button class="soon" onclick="coming('Overdue training reminders will be sent to your work email. Not enabled yet.')">Reminders</button>
+        <button class="soon" onclick="coming('Reminders will be sent to your work email once due dates are confirmed with the client (FR12).')">Reminders</button>
+        <button class="btn-sm btn-ghost" style="margin-top:20px;color:#cbd5e1;border-color:#334155" onclick="resetDemo()">Reset demo data</button>
       </aside>
       <main class="main">
         <section id="dashboard" class="page">
           <h1 class="title">Good morning, Alex</h1>
           <p class="sub">Inbound / receiving · Northgate Logistics</p>
           <div class="grid stats">
-            <div class="card"><div class="label">Overall progress</div><div class="value">68%</div><span class="pill">On track</span></div>
-            <div class="card"><div class="label">Modules completed</div><div class="value">2 / 4</div><span class="pill ok">This quarter</span></div>
-            <div class="card"><div class="label">Last scenario score</div><div class="value">80%</div><span class="pill ok">Passed</span></div>
-            <div class="card"><div class="label">Due this week</div><div class="value">1</div><span class="pill warn">Manual handling</span></div>
+            <div class="card"><div class="label">Overall progress</div><div class="value" id="d-overall">0%</div><span class="pill">Live</span></div>
+            <div class="card"><div class="label">Modules completed</div><div class="value" id="d-modules">0 / 4</div><span class="pill ok">This quarter</span></div>
+            <div class="card"><div class="label">Average score</div><div class="value" id="d-lastscore">—</div><span class="pill ok">Passed modules</span></div>
+            <div class="card"><div class="label">Due this week</div><div class="value" id="d-due">1</div><span class="pill warn">Manual handling</span></div>
           </div>
           <div class="grid two" style="margin-top:16px">
             <div class="card">
@@ -54,104 +55,52 @@
               <div class="module">
                 <div>
                   <h3>Manual Handling Safety</h3>
-                  <p>Assess the load, choose a safe lift, finish the check</p>
+                  <p>Spot the hazards, then take the assessment</p>
                 </div>
-                <button class="btn btn-primary" onclick="page('scenario')">Continue</button>
+                <button class="btn btn-primary" onclick="startModule('manual-handling')">Continue</button>
               </div>
-              <div class="bar"><div class="barhead"><span>Module progress</span><b>75%</b></div><div class="progress"><span style="width:75%"></span></div></div>
             </div>
             <div class="card">
               <h2>Alerts</h2>
-              <div class="alert"><b>Manual Handling</b><br>Finish the assessment to complete this module before Friday.</div>
-              <div class="alert" style="border-color:#2563eb;background:#eff6ff">PPE refresher is recommended for your role. Full lessons open soon.</div>
+              <div class="alert"><b>Manual Handling</b><br>Finish the assessment to complete this module.</div>
+              <div class="alert" style="border-color:#2563eb;background:#eff6ff">PPE and Fire Safety modules are scheduled for a later release (FR11 content tools not yet built).</div>
             </div>
           </div>
         </section>
 
         <section id="training" class="page hidden">
           <h1 class="title">My training</h1>
-          <p class="sub">Courses assigned to your role. Open Manual Handling to continue.</p>
-          <div class="grid two">
-            <div class="card">
-              <h2>Assigned to you</h2>
-              <div class="module">
-                <div><h3>Manual Handling</h3><p>Hazard awareness, safe lifting and decisions</p></div>
-                <button class="btn btn-primary" onclick="page('scenario')">Open</button>
-              </div>
-              <div class="module">
-                <div><h3>Forklift Safety</h3><p>Vehicle awareness and pedestrian zones</p></div>
-                <button class="btn btn-secondary" onclick="coming('Forklift Safety is scheduled for your site. Manual Handling is available now.')">Coming soon</button>
-              </div>
-              <div class="module">
-                <div><h3>Personal Protective Equipment</h3><p>PPE selection, inspection and use</p></div>
-                <button class="btn btn-secondary" onclick="coming('The full PPE course will open after Manual Handling is complete.')">Coming soon</button>
-              </div>
-              <div class="module">
-                <div><h3>Fire Safety</h3><p>Emergency response and evacuation</p></div>
-                <button class="btn btn-secondary" onclick="coming('Fire Safety will be released in a later training cycle.')">Coming soon</button>
-              </div>
-            </div>
-            <div class="card">
-              <h2>How training works</h2>
-              <div class="bar"><div class="barhead"><span>1. Open your module</span><b>✓</b></div><div class="progress"><span style="width:100%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>2. Review the materials</span><b>✓</b></div><div class="progress"><span style="width:100%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>3. Take tests and write practice</span><b>Current</b></div><div class="progress"><span style="width:65%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>4. Get feedback to improve skills</span><b>Next</b></div><div class="progress"><span style="width:0%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>5. Finish the assessment</span><b>Next</b></div><div class="progress"><span style="width:0%"></span></div></div>
-              <div class="bar"><div class="barhead"><span>6. Track your skill progress</span><b>Next</b></div><div class="progress"><span style="width:0%"></span></div></div>
-              <div class="coming" style="margin-top:14px">A 360° warehouse walkthrough is planned. Today you use the interactive test scene.</div>
-            </div>
-          </div>
+          <p class="sub">Manual Handling and Hazard Awareness are fully interactive in this build. PPE and Fire Safety are scheduled next.</p>
+          <div id="training-list"></div>
         </section>
 
-        <section id="scenario" class="page hidden">
-          <h1 class="title">Manual handling scenario</h1>
-          <p class="sub">Look at the aisle, then choose the safest action before lifting.</p>
-          <div class="scenario">
-            <div class="scene">
-              <div class="scene-label">INBOUND AISLE · GOODS-IN</div>
-              <div class="haz h1">Hazard</div>
-              <div class="haz h2">Load</div>
-              <div class="rack"></div>
-              <div class="box b1"></div>
-              <div class="box b2"></div>
-              <div class="box b3"></div>
-              <div class="worker">👷</div>
-            </div>
-            <div class="card">
-              <span class="pill">Scenario 1 of 2</span>
-              <h2>What should you do before lifting this load?</h2>
-              <p class="sub">Choose the action that best reduces the risk of injury.</p>
-              <button class="choice" onclick="answer(false)">A. Lift immediately using the back</button>
-              <button class="choice" onclick="answer(true)">B. Assess the load and use the correct lifting technique</button>
-              <button class="choice" onclick="answer(false)">C. Twist while lifting to save time</button>
-              <button class="choice" onclick="answer(false)">D. Carry the load above shoulder height</button>
-              <div id="feedback" class="feedback hidden"></div>
-              <button id="next" class="btn btn-primary hidden" style="margin-top:10px" onclick="page('progress')">See my progress</button>
-            </div>
+        <section id="module" class="page hidden">
+          <div class="stepper">
+            <div class="step" id="s1">1. Intro</div>
+            <div class="step" id="s2">2. Spot hazards</div>
+            <div class="step" id="s3">3. Assessment</div>
+            <div class="step" id="s4">4. Result</div>
           </div>
+          <div id="module-body"></div>
         </section>
 
         <section id="progress" class="page hidden">
           <h1 class="title">My progress</h1>
-          <p class="sub">Your training record for this site. Speak to your supervisor if a due date looks wrong.</p>
+          <p class="sub">Live training record for this demo session — stored in your browser (localStorage), not a server.</p>
           <div class="grid stats">
-            <div class="card"><div class="label">Completion</div><div class="value">68%</div></div>
-            <div class="card"><div class="label">Average score</div><div class="value">82%</div></div>
-            <div class="card"><div class="label">Completed</div><div class="value">2</div></div>
+            <div class="card"><div class="label">Completion</div><div class="value" id="p-completion">0%</div></div>
+            <div class="card"><div class="label">Average score</div><div class="value" id="p-avg">—</div></div>
+            <div class="card"><div class="label">Completed</div><div class="value" id="p-completed">0</div></div>
             <div class="card"><div class="label">Overdue</div><div class="value">0</div></div>
           </div>
           <div class="card" style="margin-top:16px">
             <h2>Module status</h2>
             <table class="table">
               <tr><th>Module</th><th>Status</th><th>Progress</th><th>Score</th></tr>
-              <tr><td>Manual Handling</td><td><span class="pill warn">In progress</span></td><td>75%</td><td>80%</td></tr>
-              <tr><td>Forklift Safety</td><td><span class="pill ok">Completed</span></td><td>100%</td><td>86%</td></tr>
-              <tr><td>PPE</td><td><span class="pill ok">Completed</span></td><td>100%</td><td>78%</td></tr>
-              <tr><td>Fire Safety</td><td><span class="pill">Not started</span></td><td>0%</td><td>—</td></tr>
+              <tbody id="p-table-body"></tbody>
             </table>
           </div>
-          <div class="coming" style="margin-top:16px">Downloadable certificates and overdue email reminders will be added once your site confirms pass marks and due dates.</div>
+          <div class="coming" style="margin-top:16px">Certificates are available from the module result screen once a module is passed. Email reminders will be added once your site confirms due dates.</div>
         </section>
       </main>
     </div>

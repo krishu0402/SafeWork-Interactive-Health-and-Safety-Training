@@ -68,6 +68,7 @@ button { cursor: pointer; border: 0; }
 }
 .pill.ok { background: #ecfdf5; color: var(--green); }
 .pill.warn { background: #fffbeb; color: var(--amber); }
+.pill.bad { background: #fef2f2; color: var(--red); }
 .pill.lock { background: #f1f5f9; color: #64748b; }
 
 .btn {
@@ -83,6 +84,7 @@ button { cursor: pointer; border: 0; }
 .btn-ghost { background: transparent; color: #334155; border: 1px solid var(--line); }
 .btn-ghost:hover { background: #f1f5f9; }
 .btn-wide { width: 100%; }
+.btn-sm { padding: 8px 14px; font-size: 13px; }
 .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none; }
 
 /* Portal chooser */
@@ -139,6 +141,8 @@ button { cursor: pointer; border: 0; }
   width: 100%; padding: 11px; margin-top: 6px;
   border: 1px solid #cbd5e1; border-radius: 9px;
 }
+.login input.err { border-color: var(--red); background: #fef2f2; }
+.field-err { color: var(--red); font-size: 12px; margin-top: 4px; min-height: 16px; }
 .note { font-size: 12px; color: var(--muted); margin-top: 12px; }
 .back { display: inline-block; margin-bottom: 10px; color: var(--blue); font-weight: 700; text-decoration: none; font-size: 13px; }
 
@@ -189,8 +193,19 @@ button { cursor: pointer; border: 0; }
   border-radius: 12px;
   padding: 16px;
 }
+.formrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.formrow input, .formrow select { flex: 1; min-width: 160px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
 
-/* Scenario */
+/* Module flow */
+.stepper { display: flex; gap: 8px; margin-bottom: 18px; }
+.step {
+  flex: 1; text-align: center; font-size: 11px; font-weight: 700;
+  padding: 8px 4px; border-radius: 8px; background: #f1f5f9; color: var(--muted);
+}
+.step.on { background: var(--blue); color: #fff; }
+.step.done { background: #ecfdf5; color: var(--green); }
+
+/* Scenario / hotspot scene */
 .scenario { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; }
 .scene {
   height: 420px; border-radius: 16px;
@@ -207,20 +222,46 @@ button { cursor: pointer; border: 0; }
 .b2 { left: 130px; bottom: 100px; }
 .b3 { right: 90px; bottom: 75px; }
 .worker { position: absolute; left: 40%; bottom: 52px; font-size: 72px; }
-.haz {
-  position: absolute; border: 3px dashed #dc2626; color: #b91c1c;
-  padding: 7px; border-radius: 9px; background: #fee2e277; font-weight: 800; font-size: 12px;
+.puddle { position: absolute; left: 20%; bottom: 40px; width: 90px; height: 34px; background: rgba(56,189,248,0.55); border-radius: 50%; }
+.cable { position: absolute; left: 8%; bottom: 58px; width: 55%; height: 6px; background: #1f2937; border-radius: 4px; transform: rotate(-3deg); }
+.extinguisher { position: absolute; right: 10%; top: 60%; width: 18px; height: 40px; background: #dc2626; border-radius: 6px 6px 3px 3px; }
+
+.hotspot {
+  position: absolute; width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,0.85); border: 3px solid var(--blue);
+  display: grid; place-items: center; font-weight: 800; color: var(--blue);
+  box-shadow: 0 0 0 6px rgba(79,70,229,0.15);
+  animation: pulse 1.8s infinite;
 }
-.h1 { left: 40px; bottom: 35px; }
-.h2 { right: 25px; top: 250px; }
+.hotspot.found { border-color: var(--green); color: var(--green); background: #ecfdf5; animation: none; box-shadow: none; }
+.hotspot.found.safe { border-color: var(--muted); color: var(--muted); background: #f1f5f9; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 6px rgba(79,70,229,0.15); } 50% { box-shadow: 0 0 0 10px rgba(79,70,229,0.06); } }
+
 .choice {
   display: block; width: 100%; padding: 11px; margin: 8px 0;
   text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 8px;
 }
-.choice:hover { border-color: var(--blue); background: #eff6ff; }
+.choice:hover:not([disabled]) { border-color: var(--blue); background: #eff6ff; }
+.choice.correct { border-color: var(--green); background: #ecfdf5; }
+.choice.wrong { border-color: var(--red); background: #fef2f2; }
 .feedback { padding: 13px; border-radius: 9px; margin-top: 10px; }
 .good { background: #ecfdf5; color: #166534; }
 .bad { background: #fef2f2; color: #991b1b; }
+
+/* Result / certificate */
+.result-badge {
+  width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 34px; margin: 0 auto 14px; font-weight: 800;
+}
+.result-badge.pass { background: #ecfdf5; color: var(--green); }
+.result-badge.fail { background: #fef2f2; color: var(--red); }
+.cert-preview {
+  border: 6px solid var(--navy); border-radius: 6px; padding: 30px; text-align: center;
+  background: #fdfdfd; background-image: radial-gradient(circle at 50% 0%, rgba(79,70,229,0.06), transparent 60%);
+}
+.cert-preview .cname { font-size: 26px; font-weight: 800; color: var(--navy); margin: 10px 0; }
+.cert-preview .cmod { color: var(--blue); font-weight: 700; }
+.cert-preview .cmeta { color: var(--muted); font-size: 12px; margin-top: 14px; }
 
 .toast {
   position: fixed; right: 18px; bottom: 18px;
