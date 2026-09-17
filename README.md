@@ -27,10 +27,7 @@ No installation, build step, or server is required.
    into the browser).
 3. Choose **Worker** or **Admin/Supervisor** to sign in.
 
-Sign-in forms validate input format only (a valid-looking email, a password of 4+
-characters) — there is no real authentication system yet. Progress is stored in your
-browser's `localStorage`, so it persists across reloads on the same device but is not
-shared between devices or users.
+Progress is stored in your browser's `localStorage`, so it persists across reloads on the same device but is not shared between devices or users.
 
 ## Suggested demo path
 
@@ -38,9 +35,8 @@ shared between devices or users.
    find both hazards in the scene → answer both questions → view the result → download
    the certificate if passed → *My progress* (now reflects the completed module).
 2. Repeat briefly for **Hazard Awareness** to show a second complete module.
-3. **Admin/Supervisor portal** → sign in → *Team overview* (completion figure now
-   reflects what was just completed in the worker portal) → *People* → add a worker and
-   assign a module.
+3. **Supervisor portal** → sign in → *Team overview* → *People* → add, edit or delete a worker and assign a module.
+4. **Administrator portal** → sign in → review the overview and training-content area; workforce management is restricted to the Supervisor role in this prototype.
 
 ## What is functionally built vs. simulated
 
@@ -101,7 +97,7 @@ css/styles.css  Shared design system and layout
 js/app.js       Application logic: auth, state, module engine, certificates
 ```
 
-State is held in a single `localStorage` key (`safework_demo_v1`); a **Reset demo data**
+State is held in a single `localStorage` key (`safework_demo_v1`); a **Log out** control
 control is available in both portals to clear it.
 
 ## Team
