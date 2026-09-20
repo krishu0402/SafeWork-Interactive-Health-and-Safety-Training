@@ -314,22 +314,8 @@ async function downloadMarksCSV() {
     }
 }
 
-async function viewCertificate(assignmentId) {
-    try {
-        const cert = await API.request(`/api/assignments/${assignmentId}/certificate`);
-        
-        hideAllViews();
-        document.getElementById('view-certificate-display').classList.remove('hidden');
-
-        document.getElementById('cert-name').innerText = `${cert.first_name} ${cert.last_name}`;
-        document.getElementById('cert-module').innerText = cert.title;
-        document.getElementById('cert-score').innerText = `${cert.score}%`;
-        document.getElementById('cert-date').innerText = new Date(cert.issue_date).toLocaleDateString();
-        document.getElementById('cert-ref').innerText = cert.certificate_ref;
-        
-    } catch (e) {
-        alert('Failed to load certificate: ' + e.message);
-    }
+function viewCertificate(assignmentId) {
+    window.open(`/api/assignments/${assignmentId}/certificate`, '_blank');
 }
 
 
