@@ -1,3 +1,10 @@
-node_modules
+node_modules/
+.env
+.env.*
+!.env.example
+database/*.sqlite
+database/*.sqlite3
+database/*.db
+database/.local-credentials.txt
+npm-debug.log*
 .DS_Store
-Thumbs.db

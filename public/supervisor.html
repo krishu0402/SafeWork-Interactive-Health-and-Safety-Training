@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Dashboard - SafeWork</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">SafeWork (Sup)</div>
+            <nav class="sidebar-nav">
+                <a href="#" class="active" onclick="showView('dashboard')">Team Dashboard</a>
+                <a href="#" onclick="showView('workers')">Manage Team</a>
+                <a href="#" onclick="showView('workers')">Assign Training</a>
+                <a href="#" onclick="showView('reports')">Reports</a>
+                <a href="#" onclick="showView('reminders')">Reminders</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn btn-secondary btn-block" onclick="logout()">Log Out</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <h2 id="welcome-message">Team Dashboard</h2>
+                <div id="user-info"></div>
+            </header>
+
+            <div class="content-area" id="view-dashboard">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Compliance Overview</h2>
+                    <span style="color: #a9bee3;">March 30, 2026</span>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3 style="font-size: 0.9rem;">Total workforce</h3>
+                        <div class="stat" id="stat-team">0</div>
+                        <p style="font-size: 0.8rem; color: #a9bee3;">Across all shifts</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="font-size: 0.9rem;">Compliance</h3>
+                        <div class="stat" id="stat-rate" style="color: #ffb142;">0%</div>
+                        <p style="font-size: 0.8rem; color: #a9bee3;"><span style="color:#2ed573;">+2.1%</span> vs last month</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="font-size: 0.9rem;">Overdue</h3>
+                        <div class="stat" id="stat-overdue">0</div>
+                        <p style="font-size: 0.8rem; color: #a9bee3;">Past deadline</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="font-size: 0.9rem;">Refresher</h3>
+                        <div class="stat">43%</div>
+                        <p style="font-size: 0.8rem; color: #a9bee3;"><span style="color:#ff4757;">-3%</span> vs last quarter</p>
+                    </div>
+                </div>
+                
+                <div class="chart-row mt-3">
+                    <div class="chart-col">
+                        <h3>Compliance trend</h3>
+                        <p style="font-size: 0.8rem; color: #a9bee3;">12-week rolling</p>
+                        <div style="position: relative; height: 250px; width: 100%;">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-col">
+                        <h3>By team</h3>
+                        <p style="font-size: 0.8rem; color: #a9bee3;">Mandated training completion</p>
+                        <div style="position: relative; height: 250px; width: 100%;">
+                            <canvas id="agencyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3" id="training-programs">
+                    <h3>Training programs</h3>
+                    <p style="font-size: 0.8rem; color: #a9bee3; margin-bottom: 1rem;">Core modules</p>
+                    <div class="course-grid" id="program-list">
+                        <!-- Programs populated here -->
+                    </div>
+                </div>
+
+                <h3 class="mt-3">Recent Team Activity</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Worker</th>
+                                <th>Module</th>
+                                <th>Status</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="content-area hidden" id="view-workers">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>Manage Team</h3>
+                    <div>
+                        <button class="btn btn-success" onclick="showWorkerModal()">Add Worker</button>
+                        <button class="btn btn-primary" onclick="showAssignModal()">Assign Training</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workers-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="content-area hidden" id="view-reports">
+                <h3>Training Reports</h3>
+                <button class="btn btn-secondary mb-3" onclick="exportCSV()">Export CSV</button>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Worker</th>
+                                <th>Department</th>
+                                <th>Module</th>
+                                <th>Status</th>
+                                <th>Score</th>
+                                <th>Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal for Assigning Training -->
+            <div id="assign-modal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index: 1000;">
+                <div class="card" style="width:600px; max-width: 90%; z-index:101; max-height: 90vh; overflow-y: auto;">
+                    <h3>Assign Training</h3>
+                    <div id="assign-error" class="alert alert-error hidden"></div>
+                    <form id="assign-form" style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="form-group" style="display: flex; flex-direction: column;">
+                            <label style="font-weight: bold; margin-bottom: 5px;">Worker</label>
+                            <select id="assign-user" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 100%; color: #000;" required></select>
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column;">
+                            <label style="font-weight: bold; margin-bottom: 5px;">Module</label>
+                            <select id="assign-module" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 100%; color: #000;" required></select>
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column;">
+                            <label style="font-weight: bold; margin-bottom: 5px;">Due Date</label>
+                            <input type="date" id="assign-date" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 100%; color: #000;" required>
+                        </div>
+                        <div style="display: flex; gap: 15px; margin-top: 10px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">Assign Training</button>
+                            <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('assign-modal').classList.add('hidden')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal for Worker Management -->
+            <div id="worker-modal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index: 1000;">
+                <div class="card" style="width:600px; max-width: 90%; z-index:101; max-height: 90vh; overflow-y: auto;">
+                    <h3 id="worker-modal-title">Add Worker</h3>
+                    <div id="worker-error" class="alert alert-error hidden"></div>
+                    <form id="worker-form" style="display: flex; flex-direction: column; gap: 15px;">
+                        <input type="hidden" id="worker-id">
+                        <div class="form-group" style="display: flex; flex-direction: column;">
+                            <label style="font-weight: bold; margin-bottom: 5px;">First Name</label>
+                            <input type="text" id="worker-fn" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 100%; color: #000;" required>
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column;">
+                            <label style="font-weight: bold; margin-bottom: 5px;">Last Name</label>
+                            <input type="text" id="worker-ln" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 100%; color: #000;" required>
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column;">
+                            <label style="font-weight: bold; margin-bottom: 5px;">Email</label>
+                            <input type="email" id="worker-email" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 100%; color: #000;" required>
+                        </div>
+                        <div class="form-group" id="worker-password-group" style="display: flex; flex-direction: column;">
+                            <label style="font-weight: bold; margin-bottom: 5px;">Password</label>
+                            <input type="password" id="worker-password" style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 100%; color: #000;" required>
+                        </div>
+                        <div style="display: flex; gap: 15px; margin-top: 10px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;">Save Worker</button>
+                            <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('worker-modal').classList.add('hidden')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+
+            <!-- Reminders View -->
+            <div class="content-area hidden" id="view-reminders">
+                <h2>Training Reminders</h2>
+                <div class="card mt-3">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Worker</th>
+                                    <th>Module</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sup-reminders-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/supervisor.js"></script>
+</body>
+</html>
