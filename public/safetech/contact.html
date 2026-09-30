@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contact SafeTech Solutions — discuss SafeWork or our workplace H&S technology services.">
+    <title>Contact | SafeTech Solutions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/safetech/safetech.css">
+</head>
+<body>
+<header class="st-header" id="st-header">
+    <div class="st-container st-nav-inner">
+        <a class="st-brand" href="/safetech/">
+            <span class="st-logo">ST</span>
+            <span><strong>SafeTech Solutions</strong><small>Health &amp; Safety Technology</small></span>
+        </a>
+        <nav class="st-nav" id="st-nav">
+            <a href="/safetech/">Home</a>
+            <a href="/safetech/about.html">About Us</a>
+            <a href="/safetech/services.html">Services</a>
+            <a href="/safetech/safework.html">SafeWork</a>
+            <a href="/safetech/how-it-works.html">How It Works</a>
+            <a href="/safetech/portfolio.html">Portfolio</a>
+            <a href="/safetech/contact.html" class="active">Contact</a>
+        </nav>
+        <div class="st-header-actions">
+            <a href="/login.html" class="st-btn st-btn-outline">SafeWork Login</a>
+            <a href="/safetech/contact.html" class="st-btn st-btn-primary">Get In Touch</a>
+        </div>
+        <button class="st-mobile-menu" id="st-menu-btn" aria-label="Open navigation">☰</button>
+    </div>
+</header>
+
+<main>
+    <section class="st-inner-hero">
+        <div class="st-container">
+            <span class="st-eyebrow">Get In Touch</span>
+            <h1>Contact SafeTech Solutions</h1>
+            <p>Have a question about SafeWork or our workplace safety technology? We'd be glad to hear from you.</p>
+        </div>
+    </section>
+
+    <section class="st-section st-bg-white">
+        <div class="st-container">
+            <div class="st-contact-layout">
+                <!-- Contact Info -->
+                <div class="st-contact-info">
+                    <h2>How can we help?</h2>
+                    <p>Whether you're interested in SafeWork for your organisation, have a question about our services, or want to discuss a project, use the form to get in touch and we'll respond promptly.</p>
+
+                    <div class="st-contact-details">
+                        <div class="st-contact-item">
+                            <div class="st-contact-item-icon">🛡️</div>
+                            <div>
+                                <h4>SafeWork Platform</h4>
+                                <p>Questions about features, module content, or how SafeWork can work for your team.</p>
+                            </div>
+                        </div>
+                        <div class="st-contact-item">
+                            <div class="st-contact-item-icon">💼</div>
+                            <div>
+                                <h4>Services Enquiries</h4>
+                                <p>Discuss custom training content, compliance reporting, or platform implementation.</p>
+                            </div>
+                        </div>
+                        <div class="st-contact-item">
+                            <div class="st-contact-item-icon">🔑</div>
+                            <div>
+                                <h4>SafeWork Login Support</h4>
+                                <p>If you have an account and need access help, contact your workplace administrator or visit the <a href="/login.html" style="color:var(--st-teal); font-weight:700;">SafeWork login page</a>.</p>
+                            </div>
+                        </div>
+                        <div class="st-contact-item">
+                            <div class="st-contact-item-icon">📋</div>
+                            <div>
+                                <h4>Existing SafeWork users</h4>
+                                <p>Workers and supervisors with active accounts should use the <a href="/contact.html" style="color:var(--st-teal); font-weight:700;">SafeWork Help &amp; Support</a> page inside the platform.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="st-contact-form">
+                    <h3>Send us a message</h3>
+                    <div id="st-form-status" class="st-form-status" role="alert"></div>
+                    <form id="st-contact-form" novalidate>
+                        <div class="st-form-row">
+                            <div class="st-form-group">
+                                <label for="st-name">Full Name *</label>
+                                <input type="text" id="st-name" name="name" required placeholder="Your name">
+                            </div>
+                            <div class="st-form-group">
+                                <label for="st-email">Email Address *</label>
+                                <input type="email" id="st-email" name="email" required placeholder="you@organisation.com">
+                            </div>
+                        </div>
+                        <div class="st-form-group">
+                            <label for="st-org">Organisation</label>
+                            <input type="text" id="st-org" name="organisation" placeholder="Company or organisation name">
+                        </div>
+                        <div class="st-form-group">
+                            <label for="st-subject">Subject *</label>
+                            <select id="st-subject" name="subject" required>
+                                <option value="">Select a topic…</option>
+                                <option value="SafeWork Platform Enquiry">SafeWork Platform Enquiry</option>
+                                <option value="Services Enquiry">Services Enquiry</option>
+                                <option value="Training Content Enquiry">Training Content Enquiry</option>
+                                <option value="Technical Question">Technical Question</option>
+                                <option value="General Enquiry">General Enquiry</option>
+                            </select>
+                        </div>
+                        <div class="st-form-group">
+                            <label for="st-message">Message *</label>
+                            <textarea id="st-message" name="message" required placeholder="Tell us about your question or requirements…" rows="5"></textarea>
+                        </div>
+                        <button type="submit" class="st-btn st-btn-primary" style="width:100%; justify-content:center; padding:14px;">Send Message →</button>
+                        <p style="font-size:.78rem; color:var(--st-muted); text-align:center; margin-top:12px;">We will respond to your enquiry as soon as possible.</p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Existing SafeWork users notice -->
+    <section class="st-section st-bg-light">
+        <div class="st-container">
+            <div class="st-section-header">
+                <span class="st-eyebrow">Already Using SafeWork?</span>
+                <h2>Access your SafeWork account</h2>
+                <p>SafeWork is the operational H&amp;S training platform. If you are a worker, supervisor or administrator with an existing account, sign in directly to access your training dashboard.</p>
+            </div>
+            <div style="text-align:center; margin-top:24px;">
+                <a href="/login.html" class="st-btn st-btn-primary st-btn-lg">Sign in to SafeWork →</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="st-footer">
+    <div class="st-container">
+        <div class="st-footer-grid">
+            <div class="st-footer-brand">
+                <a class="st-brand" href="/safetech/">
+                    <span class="st-logo">ST</span>
+                    <span><strong>SafeTech Solutions</strong><small>Health &amp; Safety Technology</small></span>
+                </a>
+                <p>Building technology that helps organisations manage workplace health and safety training effectively.</p>
+            </div>
+            <div class="st-footer-links">
+                <h4>Company</h4>
+                <a href="/safetech/about.html">About Us</a>
+                <a href="/safetech/services.html">Services</a>
+                <a href="/safetech/portfolio.html">Portfolio</a>
+                <a href="/safetech/contact.html">Contact</a>
+            </div>
+            <div class="st-footer-links">
+                <h4>SafeWork</h4>
+                <a href="/safetech/safework.html">Platform Overview</a>
+                <a href="/safetech/how-it-works.html">How It Works</a>
+                <a href="/login.html">Worker Login</a>
+            </div>
+            <div class="st-footer-links">
+                <h4>Training Modules</h4>
+                <a href="/safetech/safework.html#modules">Manual Handling</a>
+                <a href="/safetech/safework.html#modules">PPE Awareness</a>
+                <a href="/safetech/safework.html#modules">Fire Safety</a>
+                <a href="/safetech/safework.html#modules">Hazard Awareness</a>
+                <a href="/safetech/safework.html#modules">Moving Vehicles &amp; Equipment</a>
+            </div>
+        </div>
+        <div class="st-footer-bottom">
+            <p>© 2026 SafeTech Solutions. All rights reserved. SafeWork is a product of SafeTech Solutions.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="/safetech/safetech.js"></script>
+</body>
+</html>

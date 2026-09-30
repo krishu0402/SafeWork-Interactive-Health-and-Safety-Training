@@ -11,6 +11,7 @@ const moduleRoutes = require('./routes/moduleRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const questionRoutes = require('./routes/questionRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -55,6 +56,7 @@ app.use('/api/modules', moduleRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/questions', questionRoutes);
 
 // Fallback route for frontend application
 app.use((req, res, next) => {

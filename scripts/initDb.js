@@ -27,6 +27,7 @@ db.exec(schema, async (err) => {
         console.error('Error seeding database:', e);
     } finally {
         db.close();
+        console.log('Database connection closed.');
     }
 });
 
@@ -47,159 +48,329 @@ async function seedDatabase() {
 
     console.log('Seeding roles...');
     await run("INSERT INTO roles (name) VALUES ('Worker'), ('Supervisor'), ('Administrator')");
-    
+
     console.log('Seeding departments...');
-    await run("INSERT INTO departments (name) VALUES ('Warehouse floor'), ('Agency / nights'), ('Inbound / receiving'), ('Dispatch'), ('Management')");
+    await run("INSERT INTO departments (name) VALUES ('Warehouse Floor'), ('Agency / Nights'), ('Inbound / Receiving'), ('Dispatch'), ('Management')");
 
     console.log('Seeding shifts...');
     await run("INSERT INTO shifts (name) VALUES ('Day'), ('Night')");
 
     console.log('Seeding users...');
-    
+
     // Admin
     const adminHash = await bcrypt.hash('Admin@2026', 10);
-    await run(`INSERT INTO users (first_name, last_name, email, password_hash, role_id, department_id, shift_id) 
+    await run(`INSERT INTO users (first_name, last_name, email, password_hash, role_id, department_id, shift_id)
                VALUES ('Admin', 'User', 'admin@northgate.com', ?, 3, 5, 1)`, [adminHash]);
-    
+
     // Supervisor
     const supHash = await bcrypt.hash('SarahSup!123', 10);
-    await run(`INSERT INTO users (first_name, last_name, email, password_hash, role_id, department_id, shift_id) 
+    await run(`INSERT INTO users (first_name, last_name, email, password_hash, role_id, department_id, shift_id)
                VALUES ('Sarah', 'Supervisor', 'sarah.s@northgate.com', ?, 2, 5, 1)`, [supHash]);
-               
+
     // Workers
     const workers = [
-        ['Alex', 'Kumar', 'alex.k@northgate.com', 'AlexK_pass1', 1, 1],
-        ['Sam', 'Patel', 'sam.p@northgate.com', 'SamP_pass2', 1, 1],
-        ['Riley', 'Chen', 'riley.c@northgate.com', 'RileyC_pass3', 1, 1],
-        ['Taylor', 'Morgan', 'taylor.m@northgate.com', 'TaylorM_pass4', 2, 2],
-        ['Priya', 'Shah', 'priya.s@northgate.com', 'PriyaS_pass5', 3, 1],
-        ['Chris', 'Wilson', 'chris.w@northgate.com', 'ChrisW_pass6', 4, 1]
+        ['Alex',   'Kumar',   'alex.k@northgate.com',   'AlexK_pass1',   1, 1],
+        ['Sam',    'Patel',   'sam.p@northgate.com',    'SamP_pass2',    1, 1],
+        ['Riley',  'Chen',    'riley.c@northgate.com',  'RileyC_pass3',  1, 1],
+        ['Taylor', 'Morgan',  'taylor.m@northgate.com', 'TaylorM_pass4', 2, 2],
+        ['Priya',  'Shah',    'priya.s@northgate.com',  'PriyaS_pass5',  3, 1],
+        ['Chris',  'Wilson',  'chris.w@northgate.com',  'ChrisW_pass6',  4, 1]
     ];
 
     for (const w of workers) {
         const workerHash = await bcrypt.hash(w[3], 10);
-        await run(`INSERT INTO users (first_name, last_name, email, password_hash, role_id, department_id, shift_id) 
+        await run(`INSERT INTO users (first_name, last_name, email, password_hash, role_id, department_id, shift_id)
                    VALUES (?, ?, ?, ?, 1, ?, ?)`, [w[0], w[1], w[2], workerHash, w[4], w[5]]);
     }
 
     console.log('Seeding modules...');
+    // IMPORTANT: "Moving Vehicles & Equipment" — not "Forklift Safety Basics"
     const modules = [
-        ['Manual Handling', 'Learn safe lifting techniques, risk assessment, and correct posture.'],
-        ['Hazard Awareness', 'Identify workplace hazards, slips, trips, and forklift routes.'],
-        ['Personal Protective Equipment', 'Understand PPE selection, inspection, and correct usage.'],
-        ['Fire Safety', 'Learn fire risk recognition, evacuation procedures, and safe responses.'],
-        ['Forklift Safety Basics', 'Essential safety rules for operating and working near forklifts.']
+        ['Manual Handling',               'Learn safe lifting techniques, risk assessment, and correct posture to prevent musculoskeletal injuries.',  70, 30],
+        ['Hazard Awareness',              'Identify workplace hazards including slips, trips, blocked exits, and forklift routes.',                      70, 25],
+        ['PPE Awareness',                 'Understand PPE selection, inspection, fitting, and correct usage for your role.',                            70, 20],
+        ['Fire Safety',                   'Learn fire risk recognition, emergency alarm procedures, evacuation routes, and assembly points.',            70, 25],
+        ['Moving Vehicles & Equipment',   'Essential safety rules for working near forklifts, moving vehicles, blind spots, and pedestrian routes.',     70, 25]
     ];
-    
+
     for (const m of modules) {
-        await run(`INSERT INTO modules (title, description) VALUES (?, ?)`, [m[0], m[1]]);
+        await run(`INSERT INTO modules (title, description, pass_mark, duration_minutes) VALUES (?, ?, ?, ?)`, m);
     }
 
     console.log('Seeding training assignments...');
-    const seededWorkers = await new Promise((resolve, reject) => db.all(`SELECT id, first_name FROM users WHERE role_id = 1`, [], (error, rows) => error ? reject(error) : resolve(rows)));
-    const seededModules = await new Promise((resolve, reject) => db.all(`SELECT id, title FROM modules WHERE is_active = 1`, [], (error, rows) => error ? reject(error) : resolve(rows)));
-    
+    const seededWorkers = await new Promise((resolve, reject) =>
+        db.all(`SELECT id, first_name FROM users WHERE role_id = 1`, [], (error, rows) => error ? reject(error) : resolve(rows))
+    );
+    const seededModules = await new Promise((resolve, reject) =>
+        db.all(`SELECT id, title FROM modules WHERE is_active = 1`, [], (error, rows) => error ? reject(error) : resolve(rows))
+    );
+
+    const crypto = require('crypto');
+    const supervisorId = 2; // Sarah Supervisor
+
     for (const worker of seededWorkers) {
         for (const moduleItem of seededModules) {
             let status = 'Not started';
             let score = null;
-            let dueDate = `date('now', '+30 day')`;
-            let completedDate = null;
+            let dueDateExpr = `date('now', '+30 day')`;
+            let completedDateExpr = 'NULL';
+            let attemptCount = 0;
 
-            // Alex Kumar: Completed Manual Handling
-            if (worker.first_name === 'Alex' && moduleItem.title === 'Manual Handling') {
-                status = 'Passed';
-                score = 85;
-                completedDate = `date('now', '-2 day')`;
-            }
-            // Sam Patel: In Progress Hazard Awareness
-            else if (worker.first_name === 'Sam' && moduleItem.title === 'Hazard Awareness') {
-                status = 'In Progress';
-            }
-            // Riley Chen: Not Started PPE
-            else if (worker.first_name === 'Riley' && moduleItem.title === 'Personal Protective Equipment') {
-                status = 'Not started';
-            }
-            // Taylor Morgan: Overdue Fire Safety
-            else if (worker.first_name === 'Taylor' && moduleItem.title === 'Fire Safety') {
-                status = 'Overdue';
-                dueDate = `date('now', '-5 day')`;
-            }
-            // Randomize some others just for realistic bulk data
-            else if (worker.first_name === 'Chris' && moduleItem.title === 'Fire Safety') {
-                status = 'Passed';
-                score = 95;
-                completedDate = `date('now', '-10 day')`;
-            }
-            else if (worker.first_name === 'Priya' && moduleItem.title === 'Manual Handling') {
-                status = 'Passed';
-                score = 75;
-                completedDate = `date('now', '-15 day')`;
+            // Alex Kumar: Passed Manual Handling + PPE; Failed Hazard Awareness
+            if (worker.first_name === 'Alex') {
+                if (moduleItem.title === 'Manual Handling') {
+                    status = 'Passed'; score = 85; dueDateExpr = `date('now', '+25 day')`; completedDateExpr = `date('now', '-2 day')`; attemptCount = 1;
+                } else if (moduleItem.title === 'PPE Awareness') {
+                    status = 'Passed'; score = 90; dueDateExpr = `date('now', '+20 day')`; completedDateExpr = `date('now', '-5 day')`; attemptCount = 1;
+                } else if (moduleItem.title === 'Hazard Awareness') {
+                    status = 'Failed'; score = 55; dueDateExpr = `date('now', '+15 day')`; completedDateExpr = 'NULL'; attemptCount = 1;
+                } else if (moduleItem.title === 'Fire Safety') {
+                    status = 'In Progress'; dueDateExpr = `date('now', '+10 day')`; attemptCount = 0;
+                }
             }
 
-            const sql = `INSERT INTO assignments (user_id, module_id, assigned_by, due_date, completed_date, status, score) 
-                         VALUES (?, ?, 2, ${dueDate}, ${completedDate}, ?, ?)`;
-            await run(sql, [worker.id, moduleItem.id, status, score]);
+            // Sam Patel: In Progress on some, Not Started others
+            else if (worker.first_name === 'Sam') {
+                if (moduleItem.title === 'Hazard Awareness') {
+                    status = 'In Progress'; dueDateExpr = `date('now', '+5 day')`; attemptCount = 0;
+                } else if (moduleItem.title === 'Manual Handling') {
+                    status = 'Passed'; score = 78; dueDateExpr = `date('now', '+20 day')`; completedDateExpr = `date('now', '-8 day')`; attemptCount = 1;
+                } else if (moduleItem.title === 'Fire Safety') {
+                    // Overdue: due date in the past
+                    status = 'Not started'; dueDateExpr = `date('now', '-3 day')`; attemptCount = 0;
+                }
+            }
+
+            // Riley Chen: Not started on most, 1 passed
+            else if (worker.first_name === 'Riley') {
+                if (moduleItem.title === 'Fire Safety') {
+                    status = 'Passed'; score = 92; dueDateExpr = `date('now', '+18 day')`; completedDateExpr = `date('now', '-12 day')`; attemptCount = 1;
+                } else if (moduleItem.title === 'PPE Awareness') {
+                    // Overdue
+                    status = 'Not started'; dueDateExpr = `date('now', '-7 day')`; attemptCount = 0;
+                } else if (moduleItem.title === 'Manual Handling') {
+                    status = 'Not started'; dueDateExpr = `date('now', '+14 day')`; attemptCount = 0;
+                }
+            }
+
+            // Taylor Morgan: Overdue Fire Safety, Passed Moving Vehicles, Failed PPE
+            else if (worker.first_name === 'Taylor') {
+                if (moduleItem.title === 'Fire Safety') {
+                    status = 'Not started'; dueDateExpr = `date('now', '-5 day')`; attemptCount = 0;
+                } else if (moduleItem.title === 'Moving Vehicles & Equipment') {
+                    status = 'Passed'; score = 88; dueDateExpr = `date('now', '+22 day')`; completedDateExpr = `date('now', '-3 day')`; attemptCount = 1;
+                } else if (moduleItem.title === 'PPE Awareness') {
+                    status = 'Failed'; score = 60; dueDateExpr = `date('now', '+12 day')`; attemptCount = 2;
+                }
+            }
+
+            // Priya Shah: Passed Manual Handling and Hazard Awareness
+            else if (worker.first_name === 'Priya') {
+                if (moduleItem.title === 'Manual Handling') {
+                    status = 'Passed'; score = 75; dueDateExpr = `date('now', '+28 day')`; completedDateExpr = `date('now', '-15 day')`; attemptCount = 1;
+                } else if (moduleItem.title === 'Hazard Awareness') {
+                    status = 'Passed'; score = 82; dueDateExpr = `date('now', '+25 day')`; completedDateExpr = `date('now', '-10 day')`; attemptCount = 1;
+                } else if (moduleItem.title === 'Moving Vehicles & Equipment') {
+                    status = 'In Progress'; dueDateExpr = `date('now', '+8 day')`; attemptCount = 0;
+                }
+            }
+
+            // Chris Wilson: Passed Fire Safety + Moving Vehicles
+            else if (worker.first_name === 'Chris') {
+                if (moduleItem.title === 'Fire Safety') {
+                    status = 'Passed'; score = 95; dueDateExpr = `date('now', '+30 day')`; completedDateExpr = `date('now', '-10 day')`; attemptCount = 1;
+                } else if (moduleItem.title === 'Moving Vehicles & Equipment') {
+                    status = 'Passed'; score = 80; dueDateExpr = `date('now', '+25 day')`; completedDateExpr = `date('now', '-7 day')`; attemptCount = 1;
+                } else if (moduleItem.title === 'Hazard Awareness') {
+                    status = 'Not started'; dueDateExpr = `date('now', '-4 day')`; attemptCount = 0;
+                }
+            }
+
+            const sql = `INSERT INTO assignments (user_id, module_id, assigned_by, due_date, completed_date, status, score, attempt_count)
+                         VALUES (?, ?, ?, ${dueDateExpr}, ${completedDateExpr}, ?, ?, ?)`;
+            await run(sql, [worker.id, moduleItem.id, supervisorId, status, score, attemptCount]);
 
             if (status === 'Passed') {
                 const row = await get(`SELECT last_insert_rowid() as id`);
                 const assignId = row.id;
-                const crypto = require('crypto');
                 const certRef = crypto.randomBytes(6).toString('hex').toUpperCase();
-                await run(`INSERT INTO certificates (assignment_id, certificate_ref, issue_date) VALUES (?, ?, ${completedDate})`, [assignId, certRef]);
+                await run(`INSERT INTO certificates (assignment_id, certificate_ref, issue_date) VALUES (?, ?, ${completedDateExpr})`, [assignId, certRef]);
             }
         }
     }
 
     console.log('Seeding questions and options...');
-    
+
     const manualHandlingQuestions = [
-        { q: 'What is the first step before lifting a heavy load?', options: ['Lift immediately', 'Assess the weight and route', 'Ask a colleague to lift it for you', 'Drag it across the floor'], correctIndex: 1, explanation: 'Always assess the load and your route before attempting to lift.' },
-        { q: 'Which part of your body should do most of the work when lifting?', options: ['Your back', 'Your arms', 'Your legs', 'Your shoulders'], correctIndex: 2, explanation: 'Bend your knees and use your strong leg muscles to lift, keeping your back straight.' },
-        { q: 'When lifting a load, where should you hold it?', options: ['As far away from your body as possible', 'Close to your body, at waist height', 'Above your head', 'With one hand only'], correctIndex: 1, explanation: 'Holding the load close to your body reduces the strain on your back.' },
-        { q: 'What should you do if a load is too heavy or awkward to lift alone?', options: ['Try to lift it anyway', 'Use a mechanical aid or ask for help', 'Push it with your feet', 'Leave it in the middle of the aisle'], correctIndex: 1, explanation: 'Always use mechanical lifting aids or seek assistance for heavy loads.' }
+        {
+            q: 'What is the FIRST step before lifting a heavy load?',
+            options: ['Lift immediately before muscles cool down', 'Assess the load weight, size, and your planned route', 'Ask a colleague to lift it instead', 'Drag it across the floor to your destination'],
+            correctIndex: 1,
+            explanation: 'Always assess the load and your route before attempting to lift. Check for obstacles, weight, and whether you need assistance.'
+        },
+        {
+            q: 'Which part of your body should do most of the work when lifting?',
+            options: ['Your back — it is the strongest muscle', 'Your arms and shoulders', 'Your legs — bend your knees and keep your back straight', 'Your neck and upper body'],
+            correctIndex: 2,
+            explanation: 'Bend your knees and use your strong leg muscles to lift, keeping your back straight and upright. Never bend from the waist.'
+        },
+        {
+            q: 'When carrying a load, where should it be held?',
+            options: ['As far away from your body as possible for balance', 'Close to your body at around waist height', 'Above your head to see where you are going', 'With one hand only for agility'],
+            correctIndex: 1,
+            explanation: 'Holding the load close to your body reduces the leverage strain on your spine and prevents back injuries.'
+        },
+        {
+            q: 'What should you do if a load is too heavy or awkward to lift alone?',
+            options: ['Try to lift it anyway — you can manage', 'Use a mechanical aid or ask a colleague for assistance', 'Push it with your feet along the floor', 'Leave it in the middle of the aisle until the end of your shift'],
+            correctIndex: 1,
+            explanation: 'Always use mechanical lifting aids (trolleys, pallet trucks) or seek team assistance for heavy or awkward loads. Never risk injury.'
+        },
+        {
+            q: 'Which posture is INCORRECT when lifting?',
+            options: ['Feet shoulder-width apart for a stable base', 'Back straight throughout the lift', 'Bending from the waist with straight legs', 'Load held close to the body'],
+            correctIndex: 2,
+            explanation: 'Bending from the waist puts extreme pressure on the discs in your lower back. Always bend your knees, not your back.'
+        }
     ];
-    
+
     const hazardAwarenessQuestions = [
-        { q: 'What should you do if you notice a liquid spill on the warehouse floor?', options: ['Walk around it', 'Report it and clean it if authorized', 'Ignore it, someone else will clean it', 'Place a pallet over it'], correctIndex: 1, explanation: 'Spills are major trip/slip hazards and must be reported and dealt with immediately.' },
-        { q: 'Why is it important to keep aisles and emergency exits clear?', options: ['To make the warehouse look tidy', 'To allow safe passage and quick evacuation during emergencies', 'To have a place to store extra inventory', 'Because the manager said so'], correctIndex: 1, explanation: 'Clear aisles are critical for safe movement and fast emergency evacuation.' },
-        { q: 'What is the best way to handle a tripping hazard like a loose cable?', options: ['Step over it', 'Secure it properly or tape it down immediately', 'Tell someone else to fix it later', 'Move it slightly to the side'], correctIndex: 1, explanation: 'Loose cables must be secured immediately to prevent tripping.' }
+        {
+            q: 'You notice a liquid spill on the warehouse floor. What should you do?',
+            options: ['Walk around it carefully', 'Report it immediately and clean it if you are authorised to do so', 'Ignore it — someone else will deal with it', 'Place a pallet over it to cover it'],
+            correctIndex: 1,
+            explanation: 'Liquid spills are major slip hazards. They must be reported immediately and dealt with by placing warning signs and cleaning up.'
+        },
+        {
+            q: 'Why is it critical to keep aisles and emergency exits clear at all times?',
+            options: ['To make the warehouse look tidy for inspections', 'To allow safe movement and fast evacuation during emergencies', 'To create space for storing extra inventory temporarily', 'Because the site manager prefers it'],
+            correctIndex: 1,
+            explanation: 'Clear aisles and exits are life-safety requirements. Blocked exits can prevent evacuation and lead to fatalities in an emergency.'
+        },
+        {
+            q: 'You spot a loose power cable running across a pedestrian walkway. What is the correct action?',
+            options: ['Step over it every time you pass', 'Secure it with cable ties or tape it down immediately, or report it', 'Tell someone else to fix it later', 'Move it slightly to one side of the walkway'],
+            correctIndex: 1,
+            explanation: 'Loose cables are serious tripping hazards. They must be secured immediately or reported so they can be fixed properly.'
+        },
+        {
+            q: 'Boxes are stacked blocking a fire exit. What do you do?',
+            options: ['Leave them — the fire exit is rarely used', 'Report it to your supervisor and ensure the exit is cleared immediately', 'Move them to a different aisle', 'Stack them more neatly against the door'],
+            correctIndex: 1,
+            explanation: 'Fire exits must be clear at all times. A blocked fire exit is a serious legal and safety violation. Report it immediately.'
+        }
     ];
 
     const ppeQuestions = [
-        { q: 'When must you wear high-visibility clothing?', options: ['Only at night', 'When operating a forklift', 'At all times on the warehouse floor', 'Only when instructed by a manager'], correctIndex: 2, explanation: 'High-vis clothing is mandatory on the warehouse floor at all times to ensure you are seen.' },
-        { q: 'What should you do if your safety helmet (hard hat) sustains a heavy impact?', options: ['Keep wearing it', 'Replace it immediately, even if no damage is visible', 'Paint over any scratches', 'Give it to someone else'], correctIndex: 1, explanation: 'Hard hats must be replaced after a heavy impact as their structural integrity may be compromised.' },
-        { q: 'Which type of footwear is required in the warehouse?', options: ['Sneakers', 'Open-toed sandals', 'Steel-toe safety boots', 'Slip-on shoes'], correctIndex: 2, explanation: 'Steel-toe boots protect feet from falling objects and crush injuries.' }
+        {
+            q: 'When must you wear high-visibility (hi-vis) clothing on the warehouse floor?',
+            options: ['Only during night shifts', 'Only when operating a forklift', 'At all times when on the warehouse floor', 'Only when your supervisor is present'],
+            correctIndex: 2,
+            explanation: 'High-vis clothing is mandatory at all times on the warehouse floor to ensure you are visible to forklift operators and other vehicle drivers.'
+        },
+        {
+            q: 'Your safety helmet has just sustained a heavy impact. What should you do?',
+            options: ['Continue wearing it — it looks undamaged', 'Replace it immediately, even if no visible damage is present', 'Paint over any scratches and continue use', 'Give it to a colleague who needs one'],
+            correctIndex: 1,
+            explanation: 'A heavy impact can compromise the structural integrity of a hard hat even without visible damage. It must be replaced immediately.'
+        },
+        {
+            q: 'Which footwear is required when working in a warehouse environment?',
+            options: ['Comfortable trainers or sneakers', 'Open-toed sandals in warm weather', 'Steel-toecap safety boots', 'Any closed-toe shoes'],
+            correctIndex: 2,
+            explanation: 'Steel-toecap safety boots protect feet from falling objects, crush injuries, and sharp hazards common in warehouse environments.'
+        },
+        {
+            q: 'Before using PPE, what must you do?',
+            options: ['Put it on as quickly as possible', 'Inspect it for damage, fit it correctly, and ensure it is suitable for the task', 'Use any available PPE regardless of size or condition', 'Wait for a manager to confirm you need it'],
+            correctIndex: 1,
+            explanation: 'PPE must be inspected before each use. Damaged, ill-fitting, or unsuitable PPE provides no protection and may create additional risks.'
+        }
     ];
 
     const fireSafetyQuestions = [
-        { q: 'What is the correct action upon hearing the fire alarm?', options: ['Finish your task', 'Investigate the cause of the fire', 'Evacuate immediately via the nearest safe exit', 'Wait for instructions'], correctIndex: 2, explanation: 'Always evacuate immediately via the nearest safe exit to the assembly point.' },
-        { q: 'Where should you go after evacuating the building during a fire drill?', options: ['Your car', 'The designated assembly point', 'A nearby cafe', 'Back inside to get your belongings'], correctIndex: 1, explanation: 'You must proceed directly to the designated assembly point for roll call.' },
-        { q: 'When is it appropriate for you to use a fire extinguisher?', options: ['Whenever you see a fire', 'Only if the fire is small, you are trained, and it is safe to do so', 'If you want to practice', 'Instead of calling the fire department'], correctIndex: 1, explanation: 'Only attempt to extinguish small fires if trained, confident, and your escape route is clear.' }
+        {
+            q: 'The fire alarm sounds. What is the correct immediate action?',
+            options: ['Finish the task you are working on first', 'Investigate to check if it is a real fire before acting', 'Evacuate immediately via the nearest safe exit without delay', 'Wait for a supervisor to give instructions'],
+            correctIndex: 2,
+            explanation: 'On hearing the fire alarm, evacuate immediately via the nearest safe exit. Never delay to collect belongings or investigate the source.'
+        },
+        {
+            q: 'After evacuating the building during a fire, where should you go?',
+            options: ['To your car in the car park', 'To the designated assembly point', 'To a nearby café or public building', 'Back inside to retrieve your belongings'],
+            correctIndex: 1,
+            explanation: 'You must proceed directly to the designated fire assembly point where a roll call will be taken. Never re-enter the building until told it is safe.'
+        },
+        {
+            q: 'When is it appropriate to use a fire extinguisher?',
+            options: ['Whenever you see any fire', 'Only if the fire is small, you are trained, and your escape route is clear', 'Always — you should try to fight any fire', 'Instead of calling the fire service'],
+            correctIndex: 1,
+            explanation: 'Only attempt to fight a fire if it is small and contained, you have been trained to use extinguishers, and your escape route is still clear.'
+        },
+        {
+            q: 'How should you report a fire hazard you have identified?',
+            options: ['Fix it yourself and do not tell anyone', 'Report it to your supervisor or fire warden immediately', 'Write it down in a notebook for later', 'Post about it on the company notice board'],
+            correctIndex: 1,
+            explanation: 'Fire hazards must be reported immediately to a supervisor or fire warden so they can be assessed and resolved without delay.'
+        }
     ];
 
-    const forkliftQuestions = [
-        { q: 'Who is authorized to operate a forklift?', options: ['Anyone with a driver\'s license', 'Only certified and trained operators', 'Warehouse managers only', 'Any employee over 18'], correctIndex: 1, explanation: 'Only formally trained and certified personnel may operate a forklift.' },
-        { q: 'When walking through the warehouse, how should you interact with a forklift?', options: ['Walk as close to it as possible', 'Assume the driver sees you', 'Make eye contact with the driver and maintain a safe distance', 'Run in front of it to pass quickly'], correctIndex: 2, explanation: 'Always make eye contact with the operator to ensure they see you before proceeding.' }
+    const movingVehiclesQuestions = [
+        {
+            q: 'Who is authorised to operate a forklift truck?',
+            options: ['Any employee who holds a car driving licence', 'Only formally trained and certified forklift operators', 'Any warehouse manager or team leader', 'Any employee over the age of 18'],
+            correctIndex: 1,
+            explanation: 'Only formally trained and certified personnel may operate a forklift. Unauthorised operation is illegal and extremely dangerous.'
+        },
+        {
+            q: 'When walking through the warehouse, how should you interact with an approaching forklift?',
+            options: ['Walk as close to it as possible to save time', 'Assume the driver has seen you and continue', 'Make eye contact with the driver, wait until they acknowledge you, then proceed', 'Run quickly past the forklift'],
+            correctIndex: 2,
+            explanation: 'Forklift drivers have limited visibility. Always make eye contact with the operator to confirm they have seen you before moving near their path.'
+        },
+        {
+            q: 'What is the safest place to walk in an area where forklifts operate?',
+            options: ['Anywhere on the warehouse floor — there is enough space', 'Along marked pedestrian walkways and corridors', 'Behind the forklift where you can see it', 'On the forklift itself if you need to cross quickly'],
+            correctIndex: 1,
+            explanation: 'Marked pedestrian walkways keep you separated from vehicle routes. Never walk in forklift operating zones unless authorised.'
+        },
+        {
+            q: 'You are approaching a blind corner in the warehouse. What should you do?',
+            options: ['Walk quickly to get past it before any vehicle arrives', 'Slow down, look, and use mirrors if available before proceeding', 'Shout to warn any approaching vehicles', 'Avoid the area entirely'],
+            correctIndex: 1,
+            explanation: 'Blind corners are high-risk areas. Always slow down, use warning mirrors, and look carefully before proceeding to avoid collision with vehicles.'
+        }
     ];
 
     const insertQAndA = async (moduleId, questions) => {
         for (let i = 0; i < questions.length; i++) {
             const q = questions[i];
-            await run(`INSERT INTO questions (module_id, question_text, explanation, order_index) VALUES (?, ?, ?, ?)`, [moduleId, q.q, q.explanation, i]);
+            await run(`INSERT INTO questions (module_id, question_text, explanation, order_index) VALUES (?, ?, ?, ?)`,
+                [moduleId, q.q, q.explanation, i]);
             const row = await get(`SELECT last_insert_rowid() as id`);
             const qId = row.id;
             for (let j = 0; j < q.options.length; j++) {
-                await run(`INSERT INTO options (question_id, option_text, is_correct) VALUES (?, ?, ?)`, [qId, q.options[j], j === q.correctIndex ? 1 : 0]);
+                await run(`INSERT INTO options (question_id, option_text, is_correct) VALUES (?, ?, ?)`,
+                    [qId, q.options[j], j === q.correctIndex ? 1 : 0]);
             }
         }
     };
 
-    await insertQAndA(1, manualHandlingQuestions);
-    await insertQAndA(2, hazardAwarenessQuestions);
-    await insertQAndA(3, ppeQuestions);
-    await insertQAndA(4, fireSafetyQuestions);
-    await insertQAndA(5, forkliftQuestions);
+    // Module IDs are 1-5 in insertion order
+    await insertQAndA(1, manualHandlingQuestions);       // Manual Handling
+    await insertQAndA(2, hazardAwarenessQuestions);      // Hazard Awareness
+    await insertQAndA(3, ppeQuestions);                  // PPE Awareness
+    await insertQAndA(4, fireSafetyQuestions);           // Fire Safety
+    await insertQAndA(5, movingVehiclesQuestions);       // Moving Vehicles & Equipment
 
-    console.log('Database seeding completed successfully.');
+    console.log('\n=== Database Seeding Complete ===');
+    console.log('Demo Accounts:');
+    console.log('  Admin:      admin@northgate.com      / Admin@2026');
+    console.log('  Supervisor: sarah.s@northgate.com    / SarahSup!123');
+    console.log('  Worker:     alex.k@northgate.com     / AlexK_pass1');
+    console.log('  Worker:     sam.p@northgate.com      / SamP_pass2');
+    console.log('  Worker:     riley.c@northgate.com    / RileyC_pass3');
+    console.log('  Worker:     taylor.m@northgate.com   / TaylorM_pass4');
+    console.log('  Worker:     priya.s@northgate.com    / PriyaS_pass5');
+    console.log('  Worker:     chris.w@northgate.com    / ChrisW_pass6');
 }

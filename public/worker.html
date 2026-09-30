@@ -3,235 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worker Dashboard - SafeWork</title>
+    <title>Worker Dashboard – SafeWork</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/interactive-scenarios.css">
 </head>
 <body>
-    <div class="dashboard-layout">
-        <aside class="sidebar">
-            <div class="sidebar-header">SafeWork</div>
-            <nav class="sidebar-nav">
-                <a href="#" class="active" id="nav-dashboard">Dashboard</a>
-                <a href="#" id="nav-training">My Training</a>
-                <a href="#" id="nav-certificates">Certificates</a>
-                <a href="#" id="nav-history">Training History</a>
-                <a href="#" id="nav-profile">Profile</a>
-                <a href="/contact.html">Help & Support</a>
-            </nav>
-            <div class="sidebar-footer">
-                <button class="btn btn-secondary btn-block" onclick="logout()">Log Out</button>
-            </div>
-        </aside>
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="brand-symbol-sm">S</span> SafeWork
+            <button class="sidebar-toggle" id="sidebar-close" aria-label="Close menu">✕</button>
+        </div>
+        <nav class="sidebar-nav" id="main-nav">
+            <a href="#" class="active" id="nav-dashboard" onclick="showDashboard(event)">
+                <span class="nav-icon">⊞</span> Dashboard
+            </a>
+            <a href="#" id="nav-training" onclick="showTraining(event)">
+                <span class="nav-icon">📚</span> My Training
+            </a>
+            <a href="#" id="nav-certificates" onclick="showCertificates(event)">
+                <span class="nav-icon">🎓</span> Certificates
+            </a>
+            <a href="#" id="nav-history" onclick="showHistory(event)">
+                <span class="nav-icon">📋</span> Training History
+            </a>
+            <a href="#" id="nav-profile" onclick="showProfile(event)">
+                <span class="nav-icon">👤</span> My Profile
+            </a>
+            <a href="/contact.html">
+                <span class="nav-icon">💬</span> Help &amp; Support
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div id="sidebar-user-info" class="sidebar-user"></div>
+            <button class="btn btn-secondary btn-block" onclick="logout()">Log Out</button>
+        </div>
+    </aside>
 
-        <main class="main-content">
-            <header class="topbar">
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle-btn" id="sidebar-open" aria-label="Open menu">☰</button>
                 <h2 id="welcome-message">Welcome</h2>
-                <div id="user-info"></div>
-            </header>
+            </div>
+            <div class="topbar-right">
+                <span id="user-info" class="topbar-email"></span>
+            </div>
+        </header>
 
-            <div class="content-area" id="main-view">
-                <!-- Dashboard View -->
-                <div id="view-dashboard">
-                    <div class="dashboard-grid">
-                        <div class="card">
-                            <h3>Overall Progress</h3>
-                            <div class="stat" id="stat-progress">0%</div>
+        <div class="content-area">
+
+            <!-- ===== DASHBOARD VIEW ===== -->
+            <div id="view-dashboard">
+                <!-- Stat Cards -->
+                <div class="dashboard-grid" id="stat-grid">
+                    <div class="card stat-card-item">
+                        <h3>Overall Completion</h3>
+                        <div class="stat" id="stat-progress">0%</div>
+                        <div class="progress-bar" style="margin-top:10px;">
+                            <div class="progress-fill" id="progress-bar-fill" style="width:0%"></div>
                         </div>
-                        <div class="card">
-                            <h3>Completed Modules</h3>
-                            <div class="stat" id="stat-completed">0</div>
-                        </div>
-                        <div class="card">
-                            <h3>Outstanding</h3>
-                            <div class="stat" id="stat-outstanding">0</div>
-                        </div>
-                        <div class="card">
-                            <h3>Overdue</h3>
-                            <div class="stat" id="stat-overdue" style="color: var(--error-color)">0</div>
-                        </div>
+                    </div>
+                    <div class="card stat-card-item">
+                        <h3>Completed</h3>
+                        <div class="stat stat-success" id="stat-completed">0</div>
+                    </div>
+                    <div class="card stat-card-item">
+                        <h3>In Progress</h3>
+                        <div class="stat stat-warning" id="stat-inprogress">0</div>
+                    </div>
+                    <div class="card stat-card-item">
+                        <h3>Overdue</h3>
+                        <div class="stat stat-danger" id="stat-overdue">0</div>
                     </div>
                 </div>
 
-                <!-- My Training View -->
-                <div id="view-training" class="hidden">
-                    <h2 style="margin-bottom: 20px;">My Training</h2>
-                    <div class="sub-tabs">
-                        <div class="sub-tab active">OVERVIEW</div>
-                        <div class="sub-tab">CHANNELS</div>
+                <!-- Upcoming Training -->
+                <div class="card mb-3">
+                    <div class="section-header">
+                        <h3>📅 Upcoming Training</h3>
+                        <a href="#" onclick="showTraining(event)" class="link-action">View all →</a>
                     </div>
-                    
-                    <div style="display: flex; gap: 30px;">
-                        <!-- Left Col: Certifications -->
-                        <div style="flex: 1; max-width: 400px;">
-                            <div class="card" style="margin-bottom: 20px;">
-                                <h3 style="margin-bottom: 15px; border-bottom: 1px solid rgba(126,177,255,0.2); padding-bottom: 10px;">My Certifications</h3>
-                                <table style="font-size: 0.9rem;">
-                                    <thead>
-                                        <tr>
-                                            <th>Status</th>
-                                            <th>Certification</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="certifications-list">
-                                        <!-- Rendered by JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Right Col: Course Grid -->
-                        <div style="flex: 2;">
-                            <div class="course-grid" id="course-grid-container">
-                                <!-- Rendered by JS -->
-                            </div>
-                        </div>
+                    <div class="table-container" style="box-shadow:none; margin-bottom:0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Module</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="upcoming-table-body">
+                                <tr><td colspan="4" class="empty-state">Loading...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!-- Scenario View (Hidden initially) -->
-                <div id="view-scenario" class="hidden">
-                    <div class="card" id="scenario-container">
-                        <h3 id="scenario-title">Interactive Training Scenario</h3>
-                        <p id="scenario-desc">Identify the hazards by clicking on them.</p>
-                        
-                        <div id="interactive-area" style="position: relative; width: 100%; height: 400px; background: #2c3e50; border: 1px solid #1abc9c; margin-bottom: 20px; cursor: crosshair; border-radius: 8px; overflow: hidden;">
-                            <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #34495e; color: #ecf0f1;">
-                                <span style="font-size: 2rem; font-weight: bold; margin-bottom: 10px;">🏭 Virtual Warehouse Floor</span>
-                                <span style="font-size: 1.1rem; opacity: 0.8;">Scan the area and click to identify potential safety hazards.</span>
-                            </div>
-                            <!-- Hazards -->
-                            <div id="hazard-1" class="hazard-hotspot" style="position:absolute; top:20%; left:30%; width:50px; height:50px; background:rgba(231, 76, 60, 0.2); border: 2px dashed rgba(231, 76, 60, 0.6); border-radius: 50%; cursor:pointer;" onclick="identifyHazard(1, 'Unsafe lifting posture')"></div>
-                            <div id="hazard-2" class="hazard-hotspot" style="position:absolute; top:60%; left:70%; width:70px; height:50px; background:rgba(231, 76, 60, 0.2); border: 2px dashed rgba(231, 76, 60, 0.6); cursor:pointer;" onclick="identifyHazard(2, 'Blocked emergency exit')"></div>
-                            <div id="hazard-3" class="hazard-hotspot" style="position:absolute; top:75%; left:15%; width:90px; height:90px; background:rgba(231, 76, 60, 0.2); border: 2px dashed rgba(231, 76, 60, 0.6); cursor:pointer;" onclick="identifyHazard(3, 'Liquid spill on floor')"></div>
-                        </div>
-
-                        <div id="scenario-feedback" class="alert hidden mb-3"></div>
-
-                        <div style="display: flex; gap: 15px;">
-                            <button id="btn-proceed-quiz" class="btn btn-primary" style="display:none; flex: 1;">Proceed to Quiz</button>
-                            <button class="btn btn-secondary" style="flex: 1;" onclick="showDashboard()">Save & Exit</button>
-                        </div>
+                <!-- Overdue Training -->
+                <div class="card mb-3" id="overdue-section" style="display:none;">
+                    <div class="section-header">
+                        <h3 style="color:#e74c3c;">⚠ Overdue Training</h3>
+                    </div>
+                    <div class="table-container" style="box-shadow:none; margin-bottom:0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Module</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="overdue-table-body"></tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!-- Quiz View (Hidden initially) -->
-                <div id="view-quiz" class="hidden">
-                    <div class="card" id="quiz-container" style="font-size: 1.2rem; line-height: 1.6;">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-
-                <!-- Quiz Result View (Hidden initially) -->
-                <div id="view-result" class="hidden">
-                    <div class="card" id="result-container" style="text-align: center; padding: 40px;">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-
-                <!-- Certificates View (Hidden initially) -->
-                <div id="view-certificates" class="hidden">
-                    <div class="card">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3>My Certificates & Performance</h3>
-                            <button class="btn btn-secondary" onclick="downloadMarksCSV()">Download Marks (CSV)</button>
-                        </div>
-                        <div id="performance-summary" class="mb-3 mt-3" style="display:flex; gap: 20px;">
-                            <div style="background:#28a745; color:white; padding:15px; border-radius:8px; flex:1;">
-                                <h4 style="margin:0;">Passed</h4>
-                                <div id="perf-passed" style="font-size:2rem; font-weight:bold;">0</div>
-                            </div>
-                            <div style="background:#dc3545; color:white; padding:15px; border-radius:8px; flex:1;">
-                                <h4 style="margin:0;">Needs Work (Failed)</h4>
-                                <div id="perf-failed" style="font-size:2rem; font-weight:bold;">0</div>
-                            </div>
-                            <div style="background:#17a2b8; color:white; padding:15px; border-radius:8px; flex:1;">
-                                <h4 style="margin:0;">Strongest Module</h4>
-                                <div id="perf-best" style="font-size:1.5rem; font-weight:bold; margin-top:10px;">-</div>
-                            </div>
-                            <div style="background:#ffc107; color:#333; padding:15px; border-radius:8px; flex:1;">
-                                <h4 style="margin:0;">Weakest Module</h4>
-                                <div id="perf-worst" style="font-size:1.5rem; font-weight:bold; margin-top:10px;">-</div>
-                            </div>
-                        </div>
-                        
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Module</th>
-                                        <th>Date Passed</th>
-                                        <th>Score</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="certificates-table-body">
-                                    <!-- Populated by JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Certificate Display View (Hidden initially) -->
-                <div id="view-certificate-display" class="hidden">
-                    <div class="card" style="text-align: center; padding: 50px; background: #fff; color: #000; border: 5px solid #173866; border-radius: 15px; margin: 20px;">
-                        <h1 style="color: #173866; font-size: 3rem; margin-bottom: 20px;">CERTIFICATE OF COMPLETION</h1>
-                        <p style="font-size: 1.5rem; color: #555;">This is to certify that</p>
-                        <h2 id="cert-name" style="font-size: 2.5rem; margin: 20px 0; border-bottom: 2px solid #ccc; display: inline-block; padding-bottom: 10px;">John Doe</h2>
-                        <p style="font-size: 1.5rem; color: #555;">has successfully completed the training module</p>
-                        <h3 id="cert-module" style="font-size: 2rem; color: #28a745; margin: 20px 0;">Hazard Awareness</h3>
-                        <p style="font-size: 1.2rem;">With a score of <strong id="cert-score">100%</strong></p>
-                        <p style="font-size: 1.2rem; margin-top: 40px;">Date Issued: <span id="cert-date">10/10/2026</span></p>
-                        <p style="font-size: 1rem; color: #888;">Certificate Ref: <span id="cert-ref">XYZ123</span></p>
-                    </div>
-                    <div style="text-align: center; margin-top: 20px;">
-                        <button class="btn btn-success" onclick="window.print()">Print / Save PDF</button>
-                        <button class="btn btn-primary" onclick="showDashboard()">Back to Dashboard</button>
-                    </div>
-                </div>
-
-                <!-- Training History View (Hidden initially) -->
-                <div id="view-history" class="hidden">
-                    <div class="card">
-                        <h3>Training History</h3>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Module</th>
-                                        <th>Status</th>
-                                        <th>Score</th>
-                                        <th>Date</th>
-                                        <th>Attempts</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="history-table-body">
-                                    <!-- Populated by JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Profile View (Hidden initially) -->
-                <div id="view-profile" class="hidden">
-                    <div class="card">
-                        <h3>My Profile</h3>
-                        <div style="font-size: 1.2rem; line-height: 2;">
-                            <p><strong>Name:</strong> <span id="profile-name"></span></p>
-                            <p><strong>Email:</strong> <span id="profile-email"></span></p>
-                            <p><strong>Role:</strong> Worker</p>
-                            <p><strong>Account Status:</strong> Active</p>
-                        </div>
+                <!-- Recent Activity -->
+                <div class="card">
+                    <h3 style="margin-bottom:15px;">Recent Activity</h3>
+                    <div class="table-container" style="box-shadow:none; margin-bottom:0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Module</th>
+                                    <th>Status</th>
+                                    <th>Score</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-activity-body">
+                                <tr><td colspan="4" class="empty-state">No activity yet.</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
 
-    <script src="/js/api.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/worker.js"></script>
+            <!-- ===== MY TRAINING VIEW ===== -->
+            <div id="view-training" class="hidden">
+                <div class="section-header mb-3">
+                    <h2>My Training</h2>
+                    <div class="filter-tabs" id="training-filters">
+                        <button class="filter-btn active" onclick="filterTraining('all', this)">All</button>
+                        <button class="filter-btn" onclick="filterTraining('Not started', this)">Not Started</button>
+                        <button class="filter-btn" onclick="filterTraining('In Progress', this)">In Progress</button>
+                        <button class="filter-btn" onclick="filterTraining('Passed', this)">Completed</button>
+                        <button class="filter-btn" onclick="filterTraining('Failed', this)">Failed</button>
+                        <button class="filter-btn" onclick="filterTraining('Overdue', this)">Overdue</button>
+                    </div>
+                </div>
+                <div class="course-grid" id="course-grid-container">
+                    <p class="empty-state">Loading your training modules...</p>
+                </div>
+            </div>
+
+            <!-- ===== TRAINING CONTENT VIEW (slides before scenario) ===== -->
+            <div id="view-content" class="hidden">
+                <div class="card">
+                    <div class="content-nav">
+                        <button class="btn btn-secondary btn-sm" onclick="showTraining(null)">← Back to Training</button>
+                        <span id="content-module-title" style="font-weight:bold; font-size:1.1rem;"></span>
+                    </div>
+                    <div id="content-slides-container" style="margin-top:20px;"></div>
+                    <div class="content-footer">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button class="btn btn-secondary" id="btn-prev-slide" onclick="changeSlide(-1)" style="display:none;">← Previous</button>
+                            <span id="slide-counter" style="font-size:0.9rem; color:#a9bee3;"></span>
+                            <button class="btn btn-primary" id="btn-next-slide" onclick="changeSlide(1)">Next →</button>
+                        </div>
+                        <button class="btn btn-success" id="btn-start-scenario" style="display:none;" onclick="startScenario()">
+                            Continue to Scenario →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SCENARIO VIEW ===== -->
+            <div id="view-scenario" class="hidden">
+                <div class="card">
+                    <div class="content-nav" style="margin-bottom:15px;">
+                        <button class="btn btn-secondary btn-sm" onclick="showTraining(null)">← Exit Training</button>
+                        <span id="scenario-module-label" style="font-size:0.9rem; color:#a9bee3;"></span>
+                    </div>
+                    <h3 id="scenario-title">Interactive Scenario</h3>
+                    <p id="scenario-desc" style="margin:10px 0 20px; color:#a9bee3;"></p>
+
+                    <div id="scenario-content">
+                        <!-- Populated by JS per module -->
+                    </div>
+
+                    <div id="scenario-feedback" class="alert hidden" style="margin-top:15px;"></div>
+
+                    <div style="display:flex; gap:15px; margin-top:20px; flex-wrap:wrap;">
+                        <button id="btn-proceed-quiz" class="btn btn-success" style="display:none;" onclick="showQuizView()">
+                            Proceed to Assessment →
+                        </button>
+                        <button class="btn btn-secondary" onclick="showTraining(null)">Save &amp; Exit</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== QUIZ VIEW ===== -->
+            <div id="view-quiz" class="hidden">
+                <div class="card" id="quiz-container">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- ===== QUIZ RESULT VIEW ===== -->
+            <div id="view-result" class="hidden">
+                <div class="card" id="result-container" style="max-width:700px; margin:0 auto;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- ===== CERTIFICATES VIEW ===== -->
+            <div id="view-certificates" class="hidden">
+                <div class="section-header mb-3">
+                    <h2>Certificates &amp; Performance</h2>
+                    <button class="btn btn-secondary btn-sm" onclick="downloadMarksCSV()">Download CSV</button>
+                </div>
+                <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); margin-bottom:20px;">
+                    <div class="card" style="text-align:center;">
+                        <h3>Passed</h3>
+                        <div class="stat stat-success" id="perf-passed">0</div>
+                    </div>
+                    <div class="card" style="text-align:center;">
+                        <h3>Failed</h3>
+                        <div class="stat stat-danger" id="perf-failed">0</div>
+                    </div>
+                    <div class="card" style="text-align:center;">
+                        <h3>Best Score</h3>
+                        <div id="perf-best" style="font-size:1rem; margin-top:8px; color:#18b8ff;">–</div>
+                    </div>
+                    <div class="card" style="text-align:center;">
+                        <h3>Needs Work</h3>
+                        <div id="perf-worst" style="font-size:1rem; margin-top:8px; color:#e74c3c;">–</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="margin-bottom:15px;">My Certificates</h3>
+                    <div class="table-container" style="box-shadow:none; margin-bottom:0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Module</th>
+                                    <th>Score</th>
+                                    <th>Date Completed</th>
+                                    <th>Attempts</th>
+                                    <th>Certificate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="certificates-table-body">
+                                <tr><td colspan="5" class="empty-state">No certificates yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TRAINING HISTORY VIEW ===== -->
+            <div id="view-history" class="hidden">
+                <div class="section-header mb-3">
+                    <h2>Training History</h2>
+                </div>
+                <div class="card">
+                    <div class="table-container" style="box-shadow:none; margin-bottom:0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Module</th>
+                                    <th>Status</th>
+                                    <th>Score</th>
+                                    <th>Attempts</th>
+                                    <th>Completed</th>
+                                    <th>Due Date</th>
+                                    <th>Certificate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <tr><td colspan="7" class="empty-state">No training history yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PROFILE VIEW ===== -->
+            <div id="view-profile" class="hidden">
+                <div class="card" style="max-width:500px;">
+                    <h3 style="margin-bottom:20px;">My Profile</h3>
+                    <div class="profile-field"><span class="profile-label">Name</span><span id="profile-name"></span></div>
+                    <div class="profile-field"><span class="profile-label">Email</span><span id="profile-email"></span></div>
+                    <div class="profile-field"><span class="profile-label">Role</span><span class="badge badge-info">Worker</span></div>
+                    <div class="profile-field"><span class="profile-label">Department</span><span id="profile-dept">–</span></div>
+                    <div class="profile-field"><span class="profile-label">Account Status</span><span class="badge badge-success">Active</span></div>
+                    <div class="profile-field"><span class="profile-label">Last Login</span><span id="profile-login">–</span></div>
+                </div>
+            </div>
+
+        </div><!-- end content-area -->
+    </main>
+</div><!-- end dashboard-layout -->
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/interactive-scenarios.js"></script>
+<script src="/js/worker.js"></script>
 </body>
 </html>

@@ -67,9 +67,11 @@ router.post('/logout', requireAuth, (req, res) => {
 // GET /api/auth/me
 router.get('/me', requireAuth, async (req, res) => {
     try {
-        const user = await get(`SELECT u.id, u.first_name, u.last_name, u.email, r.name as role 
+        const user = await get(`SELECT u.id, u.first_name, u.last_name, u.email, r.name as role,
+                                       d.name as department, u.last_login 
                                 FROM users u 
                                 JOIN roles r ON u.role_id = r.id 
+                                LEFT JOIN departments d ON u.department_id = d.id 
                                 WHERE u.id = ?`, [req.session.userId]);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });

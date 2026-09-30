@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS modules (
     title TEXT NOT NULL,
     description TEXT,
     pass_mark INTEGER DEFAULT 70,
+    duration_minutes INTEGER DEFAULT 30,
     is_active INTEGER DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

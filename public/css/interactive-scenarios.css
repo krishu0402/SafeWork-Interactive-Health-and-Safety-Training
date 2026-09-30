@@ -1,0 +1,1123 @@
+/* =====================================================================
+   SafeWork – Interactive Scenario Enhancements CSS
+   Layered on top of dashboard.css – no overrides to existing styles
+   ===================================================================== */
+
+/* ── Reduced Motion ────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .hotspot, .hotspot::before, .hotspot::after,
+    .sw-tooltip, .scenario-visual-interactive,
+    .ppe-item, .fire-element, .vehicle-element,
+    .mh-zone, .progress-indicator, .hazard-counter,
+    .scenario-option, .course-card, .btn {
+        animation: none !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ── Hotspot Base System ───────────────────────────────────────────── */
+.hotspot {
+    position: absolute;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease,
+                border-color 0.25s ease, background 0.25s ease;
+    z-index: 5;
+    outline: none;
+}
+
+.hotspot::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 165, 2, 0);
+    transition: border-color 0.3s ease;
+    pointer-events: none;
+}
+
+/* Subtle idle pulse for undiscovered hotspots */
+.hotspot:not(.hotspot-completed)::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 14px;
+    border: 1px solid rgba(24, 184, 255, 0.15);
+    animation: hotspotIdlePulse 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes hotspotIdlePulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50%      { opacity: 0.6; transform: scale(1.03); }
+}
+
+/* ── Hotspot Hover State ───────────────────────────────────────────── */
+.hotspot:hover,
+.hotspot:focus-visible {
+    transform: scale(1.04);
+    border-color: rgba(255, 165, 2, 0.7);
+    box-shadow: 0 0 18px rgba(255, 165, 2, 0.25),
+                0 4px 12px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 165, 2, 0.08);
+    z-index: 10;
+}
+
+.hotspot:hover::before,
+.hotspot:focus-visible::before {
+    border-color: rgba(255, 165, 2, 0.4);
+}
+
+.hotspot:hover::after,
+.hotspot:focus-visible::after {
+    animation: none;
+    opacity: 0;
+}
+
+/* ── Hotspot Completed State ───────────────────────────────────────── */
+.hotspot-completed {
+    border-color: rgba(46, 213, 115, 0.5) !important;
+    background: rgba(46, 213, 115, 0.12) !important;
+    cursor: default;
+    transform: none !important;
+    box-shadow: 0 0 12px rgba(46, 213, 115, 0.15) !important;
+}
+
+.hotspot-completed::before {
+    border-color: rgba(46, 213, 115, 0.3) !important;
+}
+
+.hotspot-completed .hotspot-checkmark {
+    display: flex;
+}
+
+.hotspot-checkmark {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #2ed573;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(46, 213, 115, 0.4);
+    animation: checkmarkPop 0.35s ease;
+    z-index: 15;
+}
+
+@keyframes checkmarkPop {
+    0%   { transform: scale(0); opacity: 0; }
+    60%  { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Hotspot Incorrect (Shake) ─────────────────────────────────────── */
+.hotspot-shake {
+    animation: hotspotShake 0.4s ease;
+}
+
+@keyframes hotspotShake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-4px); }
+    40%      { transform: translateX(4px); }
+    60%      { transform: translateX(-3px); }
+    80%      { transform: translateX(3px); }
+}
+
+/* ── Custom Tooltip ────────────────────────────────────────────────── */
+.sw-tooltip {
+    position: absolute;
+    z-index: 100;
+    background: linear-gradient(145deg, #112e5c, #0a2040);
+    border: 1px solid rgba(255, 165, 2, 0.4);
+    border-radius: 12px;
+    padding: 12px 16px;
+    min-width: 180px;
+    max-width: 280px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #eaf2ff;
+}
+
+.sw-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.sw-tooltip-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #ffa502;
+    margin-bottom: 4px;
+}
+
+.sw-tooltip-body {
+    color: #a9bee3;
+    font-size: 0.82rem;
+}
+
+.sw-tooltip-action {
+    color: #18b8ff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Tooltip arrow */
+.sw-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 10px;
+    height: 10px;
+    background: #0a2040;
+    border-right: 1px solid rgba(255, 165, 2, 0.4);
+    border-bottom: 1px solid rgba(255, 165, 2, 0.4);
+}
+
+.sw-tooltip.tooltip-below::after {
+    bottom: auto;
+    top: -6px;
+    border-right: none;
+    border-bottom: none;
+    border-top: 1px solid rgba(255, 165, 2, 0.4);
+    border-left: 1px solid rgba(255, 165, 2, 0.4);
+}
+
+/* ── Investigation Panel (on click) ────────────────────────────────── */
+.investigation-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 420px;
+    max-width: 95vw;
+    background: linear-gradient(180deg, #0d2450 0%, #081733 100%);
+    border-left: 1px solid rgba(126, 177, 255, 0.2);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    padding: 0;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.investigation-panel.open {
+    transform: translateX(0);
+}
+
+.investigation-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(126, 177, 255, 0.15);
+    background: rgba(7, 21, 47, 0.6);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.investigation-panel-header h4 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #eaf2ff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.investigation-panel-close {
+    background: none;
+    border: 1px solid rgba(126, 177, 255, 0.2);
+    color: #a9bee3;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+.investigation-panel-close:hover {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+}
+
+.investigation-panel-body {
+    padding: 22px;
+    flex: 1;
+}
+
+.investigation-hazard-icon {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.investigation-description {
+    color: #a9bee3;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    padding: 14px;
+    background: rgba(7, 27, 59, 0.5);
+    border-radius: 10px;
+    border-left: 3px solid #ffa502;
+}
+
+.investigation-question {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #eaf2ff;
+    margin-bottom: 14px;
+}
+
+.investigation-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.investigation-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid rgba(126, 177, 255, 0.15);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    background: rgba(7, 27, 59, 0.4);
+    color: #a9bee3;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: left;
+    font-family: inherit;
+    width: 100%;
+}
+
+.investigation-option:hover,
+.investigation-option:focus-visible {
+    border-color: rgba(24, 184, 255, 0.5);
+    background: rgba(24, 184, 255, 0.06);
+    transform: translateX(3px);
+    color: #eaf2ff;
+}
+
+.investigation-option:active {
+    transform: translateX(1px);
+}
+
+.investigation-option.option-correct-answer {
+    border-color: #2ed573 !important;
+    background: rgba(46, 213, 115, 0.1) !important;
+    color: #2ed573 !important;
+    pointer-events: none;
+}
+
+.investigation-option.option-incorrect-answer {
+    border-color: #e74c3c !important;
+    background: rgba(231, 76, 60, 0.08) !important;
+    color: #e74c3c !important;
+    pointer-events: none;
+    animation: hotspotShake 0.4s ease;
+}
+
+.investigation-option.option-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.investigation-feedback {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    animation: fadeSlideIn 0.3s ease;
+}
+
+.investigation-feedback.feedback-correct {
+    background: rgba(46, 213, 115, 0.1);
+    border: 1px solid rgba(46, 213, 115, 0.3);
+    color: #2ed573;
+}
+
+.investigation-feedback.feedback-incorrect {
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+}
+
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Interactive Scene Container ───────────────────────────────────── */
+.interactive-scene {
+    position: relative;
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    margin-bottom: 16px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.interactive-scene-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.scene-instruction-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    color: #a9bee3;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+}
+
+.scene-top-badge {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* ── Hazard Awareness – Warehouse Scene ────────────────────────────── */
+.warehouse-scene {
+    height: 460px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: crosshair;
+}
+
+/* Spill hotspot ripple */
+.hotspot-spill:hover .spill-ripple,
+.hotspot-spill:focus-visible .spill-ripple {
+    animation: spillRipple 1.2s ease-in-out infinite;
+}
+
+.spill-ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    pointer-events: none;
+}
+
+@keyframes spillRipple {
+    0%   { transform: scale(0.95); opacity: 0.6; }
+    50%  { transform: scale(1.15); opacity: 0.2; }
+    100% { transform: scale(0.95); opacity: 0.6; }
+}
+
+/* Cable sway animation */
+.hotspot-cable:hover .cable-sway,
+.hotspot-cable:focus-visible .cable-sway {
+    animation: cableSway 0.8s ease-in-out infinite alternate;
+}
+
+.cable-sway {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+@keyframes cableSway {
+    0%   { transform: skewX(-1deg); }
+    100% { transform: skewX(1deg); }
+}
+
+/* Exit pulse */
+.hotspot-exit:hover .exit-pulse,
+.hotspot-exit:focus-visible .exit-pulse {
+    animation: exitPulse 1s ease-in-out infinite;
+}
+
+.exit-pulse {
+    position: absolute;
+    inset: -3px;
+    border: 2px solid rgba(231, 76, 60, 0.3);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+@keyframes exitPulse {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 0.9; }
+}
+
+/* ── Manual Handling – Interactive Worker/Load ─────────────────────── */
+.mh-scene {
+    position: relative;
+    min-height: 420px;
+    background: linear-gradient(135deg, #1a3a5c, #2d5986);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.mh-worker-svg {
+    position: relative;
+    width: 320px;
+    height: 380px;
+}
+
+.mh-zone {
+    position: absolute;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    outline: none;
+}
+
+.mh-zone:hover,
+.mh-zone:focus-visible {
+    border-color: rgba(24, 184, 255, 0.5);
+    background: rgba(24, 184, 255, 0.08);
+    box-shadow: 0 0 15px rgba(24, 184, 255, 0.2);
+}
+
+.mh-zone.zone-completed {
+    border-color: rgba(46, 213, 115, 0.4);
+    background: rgba(46, 213, 115, 0.08);
+}
+
+/* ── PPE Interactive Worker ────────────────────────────────────────── */
+.ppe-scene {
+    position: relative;
+    min-height: 420px;
+    background: linear-gradient(135deg, #1a3a5c, #2d5986);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding: 30px;
+}
+
+.ppe-worker-figure {
+    position: relative;
+    width: 200px;
+    height: 340px;
+    flex-shrink: 0;
+}
+
+.ppe-items-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    max-width: 340px;
+}
+
+.ppe-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 18px 14px;
+    background: rgba(7, 27, 59, 0.5);
+    border: 2px solid rgba(126, 177, 255, 0.15);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.22s ease, border-color 0.22s ease,
+                box-shadow 0.22s ease, background 0.22s ease;
+    outline: none;
+    min-width: 140px;
+}
+
+.ppe-item:hover,
+.ppe-item:focus-visible {
+    transform: scale(1.04) translateY(-3px);
+    border-color: rgba(24, 184, 255, 0.5);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    background: rgba(24, 184, 255, 0.06);
+}
+
+.ppe-item.ppe-identified {
+    border-color: rgba(46, 213, 115, 0.5);
+    background: rgba(46, 213, 115, 0.08);
+    pointer-events: none;
+}
+
+.ppe-item.ppe-identified .ppe-item-check {
+    display: flex;
+}
+
+.ppe-item-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.ppe-item-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #eaf2ff;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ppe-item-desc {
+    font-size: 0.78rem;
+    color: #a9bee3;
+    line-height: 1.4;
+}
+
+.ppe-item-check {
+    display: none;
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2ed573;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    color: #fff;
+    font-weight: 800;
+    animation: checkmarkPop 0.35s ease;
+}
+
+.ppe-item {
+    position: relative;
+}
+
+/* ── Fire Safety – Interactive Environment ─────────────────────────── */
+.fire-scene {
+    position: relative;
+    min-height: 420px;
+    background: linear-gradient(135deg, #3a1a1a, #5c2020);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.fire-element {
+    position: absolute;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fire-element:hover,
+.fire-element:focus-visible {
+    border-color: rgba(255, 165, 2, 0.6);
+    background: rgba(255, 165, 2, 0.08);
+    box-shadow: 0 0 18px rgba(255, 165, 2, 0.2);
+    transform: scale(1.05);
+}
+
+.fire-element.fire-completed {
+    border-color: rgba(46, 213, 115, 0.4);
+    background: rgba(46, 213, 115, 0.08);
+}
+
+/* Fire glow animation */
+.fire-glow {
+    position: absolute;
+    inset: -5px;
+    border-radius: 12px;
+    pointer-events: none;
+    animation: fireGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes fireGlow {
+    0%   { box-shadow: 0 0 10px rgba(255, 80, 0, 0.2); }
+    100% { box-shadow: 0 0 25px rgba(255, 80, 0, 0.4); }
+}
+
+/* Alarm pulse */
+.alarm-pulse {
+    animation: alarmPulse 1.2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes alarmPulse {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 1; }
+}
+
+/* Exit sign glow */
+.exit-sign-glow {
+    animation: exitSignGlow 2s ease-in-out infinite;
+}
+
+@keyframes exitSignGlow {
+    0%, 100% { text-shadow: 0 0 6px rgba(46, 213, 115, 0.4); }
+    50%      { text-shadow: 0 0 14px rgba(46, 213, 115, 0.8); }
+}
+
+/* ── Moving Vehicles Scene ─────────────────────────────────────────── */
+.vehicle-scene {
+    position: relative;
+    min-height: 420px;
+    background: linear-gradient(135deg, #1a3a5c, #2d5986);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.vehicle-element {
+    position: absolute;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vehicle-element:hover,
+.vehicle-element:focus-visible {
+    border-color: rgba(24, 184, 255, 0.5);
+    background: rgba(24, 184, 255, 0.08);
+    box-shadow: 0 0 18px rgba(24, 184, 255, 0.2);
+    transform: scale(1.04);
+}
+
+.vehicle-element.vehicle-completed {
+    border-color: rgba(46, 213, 115, 0.4);
+    background: rgba(46, 213, 115, 0.08);
+}
+
+/* Subtle vehicle movement */
+.vehicle-move {
+    animation: vehicleIdle 3s ease-in-out infinite;
+}
+
+@keyframes vehicleIdle {
+    0%, 100% { transform: translateX(0); }
+    50%      { transform: translateX(4px); }
+}
+
+/* Safety zone dashed border */
+.safety-zone-border {
+    border: 2px dashed rgba(46, 213, 115, 0.4);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+/* Warning zone */
+.warning-zone-border {
+    border: 2px dashed rgba(255, 165, 2, 0.4);
+    border-radius: 8px;
+}
+
+/* ── Scenario Progress Indicator ───────────────────────────────────── */
+.scenario-progress {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 16px 0;
+    padding: 14px 18px;
+    background: rgba(7, 27, 59, 0.5);
+    border: 1px solid rgba(126, 177, 255, 0.12);
+    border-radius: 12px;
+}
+
+.scenario-progress-steps {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+.progress-step {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(126, 177, 255, 0.2);
+    background: rgba(7, 27, 59, 0.6);
+    color: #a9bee3;
+    flex-shrink: 0;
+}
+
+.progress-step.step-completed {
+    background: rgba(46, 213, 115, 0.15);
+    border-color: #2ed573;
+    color: #2ed573;
+    animation: stepComplete 0.4s ease;
+}
+
+.progress-step.step-current {
+    border-color: #18b8ff;
+    color: #18b8ff;
+    background: rgba(24, 184, 255, 0.1);
+}
+
+.progress-step.step-pending {
+    opacity: 0.5;
+}
+
+.progress-step-line {
+    flex: 1;
+    height: 2px;
+    background: rgba(126, 177, 255, 0.15);
+    min-width: 10px;
+    max-width: 30px;
+    transition: background 0.3s ease;
+}
+
+.progress-step-line.line-completed {
+    background: rgba(46, 213, 115, 0.4);
+}
+
+@keyframes stepComplete {
+    0%   { transform: scale(0.8); }
+    50%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+.scenario-progress-label {
+    font-size: 0.82rem;
+    color: #a9bee3;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.scenario-progress-label strong {
+    color: #18b8ff;
+}
+
+/* ── Hazard Counter (animated) ─────────────────────────────────────── */
+.hazard-counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #a9bee3;
+    padding: 10px 16px;
+    background: rgba(7, 27, 59, 0.5);
+    border: 1px solid rgba(126, 177, 255, 0.12);
+    border-radius: 10px;
+    margin-top: 12px;
+}
+
+.hazard-counter-number {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #18b8ff;
+    transition: transform 0.3s ease, color 0.3s ease;
+    min-width: 24px;
+    text-align: center;
+}
+
+.hazard-counter-number.counter-bump {
+    animation: counterBump 0.4s ease;
+}
+
+@keyframes counterBump {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.3); color: #2ed573; }
+    100% { transform: scale(1); }
+}
+
+.hazard-counter-complete {
+    color: #2ed573;
+}
+
+.hazard-counter-complete .hazard-counter-number {
+    color: #2ed573;
+}
+
+/* ── Enhanced Scenario Options (for non-hotspot scenarios) ─────────── */
+.scenario-options-enhanced .scenario-option {
+    position: relative;
+    overflow: hidden;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    font-family: inherit;
+    width: 100%;
+    text-align: left;
+    color: #a9bee3;
+}
+
+.scenario-options-enhanced .scenario-option::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background 0.2s ease;
+    border-radius: 0 2px 2px 0;
+}
+
+.scenario-options-enhanced .scenario-option:hover::before {
+    background: #18b8ff;
+}
+
+.scenario-options-enhanced .scenario-option.option-correct::before {
+    background: #2ed573;
+}
+
+.scenario-options-enhanced .scenario-option.option-incorrect::before {
+    background: #e74c3c;
+}
+
+/* ── Micro-interactions: Course Cards ──────────────────────────────── */
+.course-card {
+    transition: transform 0.22s ease, border-color 0.22s ease,
+                box-shadow 0.22s ease;
+}
+
+/* ── Micro-interactions: Success Checkmark ──────────────────────────── */
+.success-checkmark-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeSlideIn 0.3s ease;
+    pointer-events: none;
+}
+
+.success-checkmark-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(46, 213, 115, 0.15);
+    border: 3px solid #2ed573;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #2ed573;
+    animation: checkmarkPop 0.5s ease;
+}
+
+/* ── Scene Completion Overlay ──────────────────────────────────────── */
+.scene-complete-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 21, 47, 0.85);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    animation: fadeSlideIn 0.4s ease;
+    border-radius: 14px;
+}
+
+.scene-complete-icon {
+    font-size: 3rem;
+    animation: checkmarkPop 0.5s ease;
+}
+
+.scene-complete-text {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #2ed573;
+}
+
+.scene-complete-sub {
+    font-size: 0.88rem;
+    color: #a9bee3;
+}
+
+/* ── SVG-based Worker Illustration (Manual Handling) ────────────────── */
+.mh-svg-worker {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+}
+
+.mh-svg-worker .body-zone {
+    cursor: pointer;
+    transition: fill 0.25s ease, stroke 0.25s ease;
+    stroke: transparent;
+    stroke-width: 2;
+}
+
+.mh-svg-worker .body-zone:hover,
+.mh-svg-worker .body-zone:focus {
+    fill: rgba(24, 184, 255, 0.15);
+    stroke: rgba(24, 184, 255, 0.5);
+}
+
+.mh-svg-worker .body-zone.zone-active {
+    fill: rgba(46, 213, 115, 0.1);
+    stroke: rgba(46, 213, 115, 0.5);
+}
+
+/* ── Scene Background Floor Grid ───────────────────────────────────── */
+.floor-grid {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(126, 177, 255, 0.03) 0px,
+        rgba(126, 177, 255, 0.03) 1px,
+        transparent 1px,
+        transparent 50px
+    ),
+    repeating-linear-gradient(
+        0deg,
+        rgba(126, 177, 255, 0.03) 0px,
+        rgba(126, 177, 255, 0.03) 1px,
+        transparent 1px,
+        transparent 50px
+    );
+    pointer-events: none;
+}
+
+/* ── Responsive Adjustments ────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .warehouse-scene {
+        height: 340px;
+    }
+
+    .investigation-panel {
+        width: 100%;
+        max-width: 100%;
+        top: auto;
+        height: 65vh;
+        border-left: none;
+        border-top: 1px solid rgba(126, 177, 255, 0.2);
+        border-radius: 18px 18px 0 0;
+        transform: translateY(100%);
+    }
+
+    .investigation-panel.open {
+        transform: translateY(0);
+    }
+
+    .ppe-scene {
+        flex-direction: column;
+        gap: 20px;
+        min-height: auto;
+        padding: 20px;
+    }
+
+    .ppe-items-grid {
+        grid-template-columns: repeat(2, 1fr);
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .mh-scene, .fire-scene, .vehicle-scene {
+        min-height: 320px;
+    }
+
+    .scenario-progress {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .sw-tooltip {
+        max-width: 220px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .warehouse-scene {
+        height: 260px;
+    }
+
+    .ppe-items-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .ppe-item {
+        padding: 14px 10px;
+        min-width: auto;
+    }
+
+    .hazard-counter {
+        flex-wrap: wrap;
+    }
+
+    .scenario-progress-steps {
+        flex-wrap: wrap;
+    }
+}
+
+/* ── Focus ring for keyboard navigation ────────────────────────────── */
+.hotspot:focus-visible,
+.ppe-item:focus-visible,
+.fire-element:focus-visible,
+.vehicle-element:focus-visible,
+.mh-zone:focus-visible,
+.investigation-option:focus-visible {
+    outline: 2px solid #18b8ff;
+    outline-offset: 2px;
+}
+
+/* ── Hidden utility ────────────────────────────────────────────────── */
+.hidden { display: none !important; }
