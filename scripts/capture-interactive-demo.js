@@ -4,7 +4,7 @@ const http = require('http');
 const path = require('path');
 const fs = require('fs');
 
-const outDir = 'C:/Users/Expert/.gemini/antigravity/brain/507caebc-b06b-42c7-a463-58839c5dcccf/demo-screenshots';
+const outDir = path.join(__dirname, '..', 'demo-screenshots');
 if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir, { recursive: true });
 }

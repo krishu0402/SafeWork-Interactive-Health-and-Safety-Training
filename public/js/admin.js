@@ -552,7 +552,7 @@ async function loadReports() {
 
         const tbody = document.getElementById('admin-report-body');
         tbody.innerHTML = assignments.map(a => {
-            const eff = (a.status !== 'Passed' && a.status !== 'Completed' && new Date(a.due_date) < new Date()) ? 'Overdue' : a.status;
+            const eff = getAdminEffectiveStatus(a);
             return `<tr>
                 <td>${a.first_name} ${a.last_name}</td>
                 <td style="font-size:0.9rem;">${a.email}</td>
@@ -573,8 +573,8 @@ function exportAdminReportCSV() {
     if (!adminReportsData.length) return;
     let csv = 'Worker,Email,Module,Status,Score,Attempts,Due Date\n';
     adminReportsData.forEach(a => {
-        const eff = (a.status !== 'Passed' && a.status !== 'Completed' && new Date(a.due_date) < new Date()) ? 'Overdue' : a.status;
-        csv += `"${a.first_name} ${a.last_name}","${a.email}","${a.module}","${eff}","${a.score !== null ? a.score + '%' : ''}","${a.attempt_count || 0}","${formatDate(a.due_date)}"\n`;
+        const eff = getAdminEffectiveStatus(a);
+        csv += `${csvValue(a.first_name + ' ' + a.last_name)},${csvValue(a.email)},${csvValue(a.module)},${csvValue(eff)},${csvValue(a.score !== null ? a.score + '%' : '')},${csvValue(a.attempt_count || 0)},${csvValue(formatDate(a.due_date))}\n`;
     });
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
@@ -615,6 +615,26 @@ async function loadCertificates() {
 // =====================================================================
 // UTILS
 // =====================================================================
+function isPastDue(dueDate) {
+    if (!dueDate) return false;
+    const dateStr = String(dueDate).split('T')[0];
+    const due = new Date(`${dateStr}T23:59:59`);
+    return due < new Date();
+}
+
+function getAdminEffectiveStatus(a) {
+    if ((a.status !== 'Passed' && a.status !== 'Completed') && isPastDue(a.due_date)) return 'Overdue';
+    return a.status;
+}
+
+function csvValue(value) {
+    let text = String(value ?? '');
+    if (/^[=+\-@]/.test(text)) {
+        text = "'" + text;
+    }
+    return `"${text.replace(/"/g, '""')}"`;
+}
+
 function getStatusBadge(status) {
     const badges = {
         'Passed':      '<span class="badge badge-success">Passed</span>',

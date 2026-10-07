@@ -87,8 +87,15 @@ function formatDate(d) {
     return new Date(d).toLocaleDateString('en-CA');
 }
 
+function isPastDue(dueDate) {
+    if (!dueDate) return false;
+    const dateStr = String(dueDate).split('T')[0];
+    const due = new Date(`${dateStr}T23:59:59`);
+    return due < new Date();
+}
+
 function getEffectiveStatus(r) {
-    if ((r.status !== 'Passed' && r.status !== 'Completed') && new Date(r.due_date) < new Date()) return 'Overdue';
+    if ((r.status !== 'Passed' && r.status !== 'Completed') && isPastDue(r.due_date)) return 'Overdue';
     return r.status;
 }
 
@@ -452,6 +459,14 @@ async function handleWorkerSubmit(e) {
     }
 }
 
+function csvValue(value) {
+    let text = String(value ?? '');
+    if (/^[=+\-@]/.test(text)) {
+        text = "'" + text;
+    }
+    return `"${text.replace(/"/g, '""')}"`;
+}
+
 // =====================================================================
 // CSV EXPORT
 // =====================================================================
@@ -464,7 +479,7 @@ function exportCSV() {
 
     let csv = 'Employee,Department,Module,Status,Score,Attempts,Due Date,Completed\n';
     data.forEach(r => {
-        csv += `"${r.first_name} ${r.last_name}","${r.department || ''}","${r.module}","${r.effective_status}","${r.score !== null ? r.score + '%' : ''}","${r.attempt_count || 0}","${formatDate(r.due_date)}","${formatDate(r.completed_date)}"\n`;
+        csv += `${csvValue(r.first_name + ' ' + r.last_name)},${csvValue(r.department || '')},${csvValue(r.module)},${csvValue(r.effective_status)},${csvValue(r.score !== null ? r.score + '%' : '')},${csvValue(r.attempt_count || 0)},${csvValue(formatDate(r.due_date))},${csvValue(formatDate(r.completed_date))}\n`;
     });
 
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });

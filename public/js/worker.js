@@ -57,8 +57,15 @@ function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function isPastDue(dueDate) {
+    if (!dueDate) return false;
+    const dateStr = String(dueDate).split('T')[0];
+    const due = new Date(`${dateStr}T23:59:59`);
+    return due < new Date();
+}
+
 function isOverdue(assignment) {
-    return new Date(assignment.due_date) < new Date()
+    return isPastDue(assignment.due_date)
         && assignment.status !== 'Passed'
         && assignment.status !== 'Completed';
 }
@@ -1003,6 +1010,14 @@ function viewCertificate(assignmentId) {
     window.open(`/api/assignments/${assignmentId}/certificate`, '_blank');
 }
 
+function csvValue(value) {
+    let text = String(value ?? '');
+    if (/^[=+\-@]/.test(text)) {
+        text = "'" + text;
+    }
+    return `"${text.replace(/"/g, '""')}"`;
+}
+
 // =====================================================================
 // CSV DOWNLOAD
 // =====================================================================
@@ -1012,7 +1027,7 @@ async function downloadMarksCSV() {
         let csv = 'Module,Status,Score,Pass Mark,Due Date,Completed Date,Attempts\n';
         assignments.forEach(a => {
             const eff = getEffectiveStatus(a);
-            csv += `"${a.title}","${eff}","${a.score !== null ? a.score + '%' : '-'}","${a.pass_mark}%","${formatDate(a.due_date)}","${formatDate(a.completed_date)}","${a.attempt_count || 0}"\n`;
+            csv += `${csvValue(a.title)},${csvValue(eff)},${csvValue(a.score !== null ? a.score + '%' : '-')},${csvValue(a.pass_mark + '%')},${csvValue(formatDate(a.due_date))},${csvValue(formatDate(a.completed_date))},${csvValue(a.attempt_count || 0)}\n`;
         });
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const url = window.URL.createObjectURL(blob);

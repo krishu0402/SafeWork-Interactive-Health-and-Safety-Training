@@ -4,6 +4,24 @@ const crypto = require('crypto');
 const { get, all, run } = require('../config/database');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
+// HTML escaping helper to prevent XSS
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// End-of-day date comparison helper: due today is NOT overdue
+function isPastDue(dueDate) {
+    if (!dueDate) return false;
+    const dateStr = String(dueDate).split('T')[0];
+    const due = new Date(`${dateStr}T23:59:59`);
+    return due < new Date();
+}
+
 // GET /api/assignments/me — Get assignments for logged-in worker
 router.get('/me', requireAuth, async (req, res) => {
     try {
@@ -31,22 +49,22 @@ router.get('/me/stats', requireAuth, async (req, res) => {
             WHERE a.user_id = ?
         `, [req.session.userId]);
 
-        const now = new Date();
         let completed = 0, inProgress = 0, overdue = 0, notStarted = 0;
 
         for (const a of assignments) {
+            const overdueFlag = isPastDue(a.due_date);
             if (a.status === 'Passed' || a.status === 'Completed') {
                 completed++;
             } else if (a.status === 'In Progress') {
                 inProgress++;
-                if (new Date(a.due_date) < now) overdue++;
+                if (overdueFlag) overdue++;
             } else if (a.status === 'Failed') {
                 // Failed but not yet re-attempted — counts as outstanding
-                if (new Date(a.due_date) < now) overdue++;
+                if (overdueFlag) overdue++;
                 else notStarted++;
             } else {
                 // Not started
-                if (new Date(a.due_date) < now) overdue++;
+                if (overdueFlag) overdue++;
                 else notStarted++;
             }
         }
@@ -102,11 +120,10 @@ router.get('/team/stats', requireAuth, requireRole([2, 3]), async (req, res) => 
         const workers = await all(`SELECT id FROM users WHERE role_id = 1`);
         const modules = await all(`SELECT id, title FROM modules WHERE is_active = 1`);
 
-        const now = new Date();
         let passed = 0, failed = 0, inProgress = 0, overdue = 0;
 
         for (const a of assignments) {
-            const isOverdue = new Date(a.due_date) < now && a.status !== 'Passed' && a.status !== 'Completed';
+            const isOverdue = isPastDue(a.due_date) && a.status !== 'Passed' && a.status !== 'Completed';
             if (a.status === 'Passed' || a.status === 'Completed') passed++;
             else if (a.status === 'Failed') { failed++; if (isOverdue) overdue++; }
             else if (a.status === 'In Progress') { inProgress++; if (isOverdue) overdue++; }
@@ -146,10 +163,37 @@ router.get('/team/stats', requireAuth, requireRole([2, 3]), async (req, res) => 
 router.post('/', requireAuth, requireRole([2, 3]), async (req, res) => {
     try {
         const { user_id, module_id, due_date } = req.body;
-        if (!user_id || !module_id || !due_date) return res.status(400).json({ error: 'Missing required fields' });
+        if (!user_id || !module_id || !due_date) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Validate user exists, is Worker (role_id 1), and is active
+        const user = await get(`SELECT id, role_id, is_active FROM users WHERE id = ?`, [user_id]);
+        if (!user) {
+            return res.status(400).json({ error: 'Selected user does not exist' });
+        }
+        if (user.role_id !== 1) {
+            return res.status(400).json({ error: 'Training can only be assigned to Worker accounts' });
+        }
+        if (!user.is_active) {
+            return res.status(400).json({ error: 'Cannot assign training to an inactive worker' });
+        }
+
+        // Validate module exists and is active
+        const moduleData = await get(`SELECT id, is_active FROM modules WHERE id = ?`, [module_id]);
+        if (!moduleData || !moduleData.is_active) {
+            return res.status(400).json({ error: 'Selected module is invalid or inactive' });
+        }
+
+        // Validate due_date format
+        if (isNaN(new Date(due_date).getTime())) {
+            return res.status(400).json({ error: 'Invalid due date format' });
+        }
 
         const existing = await get(`SELECT id FROM assignments WHERE user_id = ? AND module_id = ?`, [user_id, module_id]);
-        if (existing) return res.status(400).json({ error: 'This module is already assigned to this worker' });
+        if (existing) {
+            return res.status(400).json({ error: 'This module is already assigned to this worker' });
+        }
 
         await run(`INSERT INTO assignments (user_id, module_id, assigned_by, due_date, status, attempt_count)
                    VALUES (?, ?, ?, ?, 'Not started', 0)`,
@@ -194,8 +238,12 @@ router.post('/:id/submit', requireAuth, async (req, res) => {
             [assignmentId, req.session.userId]);
         if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
 
-        const moduleData = await get(`SELECT pass_mark FROM modules WHERE id = ?`, [assignment.module_id]);
+        // Server-side guard: block re-submission on passed/completed assignment without reset
+        if (assignment.status === 'Passed' || assignment.status === 'Completed') {
+            return res.status(400).json({ error: 'Training already completed. Use Retest Training before attempting it again.' });
+        }
 
+        const moduleData = await get(`SELECT pass_mark FROM modules WHERE id = ?`, [assignment.module_id]);
         const questions = await all(`SELECT id FROM questions WHERE module_id = ? ORDER BY order_index`, [assignment.module_id]);
         let correctCount = 0;
         const totalCount = questions.length;
@@ -206,10 +254,10 @@ router.post('/:id/submit', requireAuth, async (req, res) => {
             const correctOpt = await get(`SELECT id, option_text FROM options WHERE question_id = ? AND is_correct = 1`, [q.id]);
             const submittedOptId = answers ? answers[q.id] : null;
             const submittedOpt = submittedOptId
-                ? await get(`SELECT option_text FROM options WHERE id = ?`, [submittedOptId])
+                ? await get(`SELECT id, option_text, is_correct FROM options WHERE id = ? AND question_id = ?`, [submittedOptId, q.id])
                 : null;
             const qData = await get(`SELECT question_text, explanation FROM questions WHERE id = ?`, [q.id]);
-            const isCorrect = correctOpt && String(submittedOptId) === String(correctOpt.id);
+            const isCorrect = submittedOpt ? (submittedOpt.is_correct === 1) : false;
             if (isCorrect) correctCount++;
 
             questionResults.push({
@@ -222,9 +270,10 @@ router.post('/:id/submit', requireAuth, async (req, res) => {
         }
 
         const score = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
-        const passed = score >= moduleData.pass_mark ? 1 : 0;
+        const passMark = moduleData && moduleData.pass_mark !== undefined ? moduleData.pass_mark : 70;
+        const passed = score >= passMark ? 1 : 0;
         const completedDate = passed ? new Date().toISOString() : null;
-        const attemptCount = assignment.attempt_count + 1;
+        const attemptCount = (assignment.attempt_count || 0) + 1;
 
         // Record quiz attempt
         await run(`INSERT INTO quiz_attempts (assignment_id, score, passed) VALUES (?, ?, ?)`,
@@ -249,7 +298,7 @@ router.post('/:id/submit', requireAuth, async (req, res) => {
             message: 'Quiz submitted',
             score,
             passed,
-            pass_mark: moduleData.pass_mark,
+            pass_mark: passMark,
             total_questions: totalCount,
             correct_answers: correctCount,
             question_results: questionResults
@@ -260,7 +309,7 @@ router.post('/:id/submit', requireAuth, async (req, res) => {
     }
 });
 
-// PUT /api/assignments/:id/reset — Worker resets a passed assignment to retake it
+// PUT /api/assignments/:id/reset — Worker resets a passed/completed assignment to retake it
 router.put('/:id/reset', requireAuth, async (req, res) => {
     try {
         const assignment = await get(
@@ -269,7 +318,12 @@ router.put('/:id/reset', requireAuth, async (req, res) => {
         );
         if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
 
-        // Reset status and score; preserve attempt_count history
+        // Only allow reset on completed / passed assignments
+        if (assignment.status !== 'Passed' && assignment.status !== 'Completed') {
+            return res.status(400).json({ error: 'Only completed training can be reset for retesting' });
+        }
+
+        // Reset status and score; preserve attempt_count and quiz_attempt history
         await run(`UPDATE assignments SET status = 'In Progress', score = NULL, completed_date = NULL WHERE id = ?`, [req.params.id]);
 
         // Remove existing certificate so a fresh one can be issued on next pass
@@ -342,33 +396,31 @@ router.get('/:id/certificate', requireAuth, async (req, res) => {
             body { background: white; padding: 0; }
             .cert-wrapper { border: 12px solid #000; outline: 4px solid #333; box-shadow: none; }
             .actions { display: none; }
-            
         }
     </style>
 </head>
 <body>
     <div class="cert-wrapper">
-        
         <div class="brand">Safe<span>Work</span></div>
         <div class="brand-sub">by SafeTech Solutions</div>
         <div class="divider"></div>
         <h1>Certificate of Completion</h1>
         <p class="subtitle">This is to certify that</p>
-        <div class="recipient-name">${cert.first_name} ${cert.last_name}</div>
+        <div class="recipient-name">${escapeHtml(cert.first_name)} ${escapeHtml(cert.last_name)}</div>
         <p class="completion-text">has successfully completed the training module</p>
-        <div class="module-name">${cert.title}</div>
+        <div class="module-name">${escapeHtml(cert.title)}</div>
         <div class="details-grid">
             <div class="detail-item">
                 <div class="detail-label">Score Achieved</div>
-                <div class="detail-value">${cert.score}%</div>
+                <div class="detail-value">${escapeHtml(cert.score)}%</div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Date Issued</div>
-                <div class="detail-value">${formattedDate}</div>
+                <div class="detail-value">${escapeHtml(formattedDate)}</div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Certificate ID</div>
-                <div class="detail-value">${certId}</div>
+                <div class="detail-value">${escapeHtml(certId)}</div>
             </div>
         </div>
         <p class="safetech-name">Issued by <strong>SafeTech Solutions</strong> — SafeWork Health &amp; Safety Training Platform</p>

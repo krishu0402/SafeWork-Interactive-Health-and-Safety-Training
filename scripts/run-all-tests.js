@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 const http = require('http');
 const puppeteer = require('puppeteer');
+const path = require('path');
 
 async function waitServerReady(url, maxMs = 15000) {
     const start = Date.now();
@@ -35,9 +36,10 @@ async function runComprehensiveVerification() {
         await waitServerReady('http://localhost:3000/login.html');
         console.log('Server is ready.\n');
 
-        // 1. Run full-test.js directly
+        // 1. Run API tests directly
         console.log('=== STEP 1: API & DB INTEGRITY TESTS ===');
-        const apiTest = spawn('node', ['full-test.js'], { stdio: 'pipe' });
+        const apiTestPath = path.join(__dirname, 'api-tests.js');
+        const apiTest = spawn('node', [apiTestPath], { stdio: 'pipe' });
         let apiOut = '';
         apiTest.stdout.on('data', d => apiOut += d.toString());
         await new Promise(r => apiTest.on('close', r));
@@ -180,11 +182,11 @@ async function runComprehensiveVerification() {
         await page.waitForSelector('.course-card');
         
         // Find an assignment card for Hazard Awareness and start it
-        await page.evaluate(() => {
+        await page.evaluate(async () => {
             const ha = allAssignments.find(a => a.title === 'Hazard Awareness');
-            if (ha) startModule(ha.module_id, ha.id);
+            if (ha) await startModule(ha.module_id, ha.id);
         });
-        await new Promise(r => setTimeout(r, 800));
+        await new Promise(r => setTimeout(r, 1000));
         
         // Advance slides to scenario
         await page.evaluate(() => startScenario());

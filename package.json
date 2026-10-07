@@ -2,9 +2,11 @@
   "name": "safework",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "test": "node --check src/server.js && node --check public/js/site.js && node --check public/js/contact.js",
+    "test": "node scripts/run-all-tests.js",
+    "test:b6": "node test-b6.js",
+    "test:syntax": "node --check src/server.js && node --check public/js/site.js && node --check public/js/contact.js",
     "start": "node src/server.js",
     "setup": "node scripts/initDb.js"
   },

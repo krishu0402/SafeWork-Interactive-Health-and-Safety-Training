@@ -41,10 +41,17 @@ router.get('/:id', requireAuth, async (req, res) => {
 router.post('/', requireAuth, requireRole([3]), async (req, res) => {
     try {
         const { title, description, pass_mark, is_active } = req.body;
-        if (!title) return res.status(400).json({ error: 'Title is required' });
+        if (!title || typeof title !== 'string' || !title.trim()) {
+            return res.status(400).json({ error: 'Title is required' });
+        }
+
+        const mark = pass_mark !== undefined ? Number(pass_mark) : 70;
+        if (isNaN(mark) || !Number.isInteger(mark) || mark < 1 || mark > 100) {
+            return res.status(400).json({ error: 'Pass mark must be an integer between 1 and 100' });
+        }
 
         await run(`INSERT INTO modules (title, description, pass_mark, is_active) VALUES (?, ?, ?, ?)`, 
-                  [title, description, pass_mark || 70, is_active !== undefined ? is_active : 1]);
+                  [title.trim(), description || '', mark, is_active !== undefined ? (is_active ? 1 : 0) : 1]);
         
         const newMod = await get(`SELECT last_insert_rowid() as id`);
         await run(`INSERT INTO audit_logs (user_id, action, entity, entity_id) VALUES (?, ?, ?, ?)`, 
@@ -60,8 +67,17 @@ router.post('/', requireAuth, requireRole([3]), async (req, res) => {
 router.put('/:id', requireAuth, requireRole([3]), async (req, res) => {
     try {
         const { title, description, pass_mark, is_active } = req.body;
+        if (!title || typeof title !== 'string' || !title.trim()) {
+            return res.status(400).json({ error: 'Title is required' });
+        }
+
+        const mark = pass_mark !== undefined ? Number(pass_mark) : 70;
+        if (isNaN(mark) || !Number.isInteger(mark) || mark < 1 || mark > 100) {
+            return res.status(400).json({ error: 'Pass mark must be an integer between 1 and 100' });
+        }
+
         await run(`UPDATE modules SET title = ?, description = ?, pass_mark = ?, is_active = ? WHERE id = ?`, 
-                  [title, description, pass_mark, is_active, req.params.id]);
+                  [title.trim(), description || '', mark, is_active !== undefined ? (is_active ? 1 : 0) : 1, req.params.id]);
         
         await run(`INSERT INTO audit_logs (user_id, action, entity, entity_id) VALUES (?, ?, ?, ?)`, 
                   [req.session.userId, 'UPDATE', 'Module', req.params.id]);
@@ -95,7 +111,5 @@ router.post('/notify', requireAuth, requireRole([2, 3]), async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
-
-// Admin can also manage questions and options, but to keep it simple, we focus on the core flow.
 
 module.exports = router;

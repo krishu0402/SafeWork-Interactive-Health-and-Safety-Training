@@ -3,6 +3,14 @@ const router = express.Router();
 const { all, get } = require('../config/database');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
+// End-of-day date comparison helper: due today is NOT overdue
+function isPastDue(dueDate) {
+    if (!dueDate) return false;
+    const dateStr = String(dueDate).split('T')[0];
+    const due = new Date(`${dateStr}T23:59:59`);
+    return due < new Date();
+}
+
 // GET /api/reports/training — Detailed training report (Supervisor/Admin)
 router.get('/training', requireAuth, requireRole([2, 3]), async (req, res) => {
     try {
@@ -57,13 +65,12 @@ router.get('/admin', requireAuth, requireRole([3]), async (req, res) => {
         `);
         const certificates = await all(`SELECT id FROM certificates`);
 
-        const now = new Date();
         let completed = 0, overdue = 0;
         let totalScore = 0, scoreCount = 0;
 
         for (const a of assignments) {
             if (a.status === 'Passed' || a.status === 'Completed') completed++;
-            if (a.status !== 'Passed' && a.status !== 'Completed' && new Date(a.due_date) < now) overdue++;
+            if (a.status !== 'Passed' && a.status !== 'Completed' && isPastDue(a.due_date)) overdue++;
             if (a.score !== null) { totalScore += a.score; scoreCount++; }
         }
 
