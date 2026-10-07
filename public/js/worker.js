@@ -265,15 +265,20 @@ function renderTrainingView(filter) {
 
         let actionBtn = '';
         if (eff === 'Passed' || eff === 'Completed') {
-            actionBtn = `<button class="btn btn-success" style="width:100%;" onclick="viewCertificate(${a.id})">View Certificate</button>`;
+            actionBtn = `
+                <div style="display:flex; gap:8px; width:100%;">
+                    <button class="btn btn-success btn-sm" style="flex:1;" onclick="viewCertificate(${a.id})">Certificate 🎓</button>
+                    <button class="btn btn-secondary btn-sm" style="flex:1;" title="Retest this module" onclick="retestTraining(${a.module_id}, ${a.id})">Retest 🔄</button>
+                </div>
+            `;
         } else if (eff === 'Failed') {
-            actionBtn = `<button class="btn btn-warning" style="width:100%;" onclick="startModule(${a.module_id}, ${a.id})">Retake Assessment</button>`;
+            actionBtn = `<button class="btn btn-warning btn-sm" style="width:100%;" onclick="startModule(${a.module_id}, ${a.id})">Retake Assessment 🔄</button>`;
         } else if (eff === 'In Progress') {
-            actionBtn = `<button class="btn btn-primary" style="width:100%;" onclick="startModule(${a.module_id}, ${a.id})">Continue Training</button>`;
+            actionBtn = `<button class="btn btn-primary btn-sm" style="width:100%;" onclick="startModule(${a.module_id}, ${a.id})">Continue Training →</button>`;
         } else if (eff === 'Overdue') {
-            actionBtn = `<button class="btn btn-danger" style="width:100%;" onclick="startModule(${a.module_id}, ${a.id})">Start Now (Overdue)</button>`;
+            actionBtn = `<button class="btn btn-danger btn-sm" style="width:100%;" onclick="startModule(${a.module_id}, ${a.id})">Start Now (Overdue) ⚠️</button>`;
         } else {
-            actionBtn = `<button class="btn btn-primary" style="width:100%;" onclick="startModule(${a.module_id}, ${a.id})">Start Training</button>`;
+            actionBtn = `<button class="btn btn-primary btn-sm" style="width:100%;" onclick="startModule(${a.module_id}, ${a.id})">Start Training →</button>`;
         }
 
         return `<div class="course-card">
@@ -533,6 +538,25 @@ async function startModule(moduleId, assignmentId) {
     } catch (e) {
         console.error('Error starting module:', e);
         alert('Error loading training module: ' + e.message);
+    }
+}
+
+async function retestTraining(moduleId, assignmentId) {
+    try {
+        await API.request(`/api/assignments/${assignmentId}/reset`, { method: 'PUT' });
+    } catch (err) {
+        console.warn('Reset request note:', err.message);
+    }
+    await startModule(moduleId, assignmentId);
+}
+
+function restartScenario() {
+    if (currentModData && currentModData.title) {
+        const btnProceed = document.getElementById('btn-proceed-quiz');
+        if (btnProceed) btnProceed.style.display = 'none';
+        const feedback = document.getElementById('scenario-feedback');
+        if (feedback) feedback.classList.add('hidden');
+        renderScenarioForModule(currentModData.title);
     }
 }
 
@@ -887,7 +911,8 @@ function showQuizResult(res) {
             <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
                 <button class="btn btn-secondary" onclick="showDashboard(null)">Back to Dashboard</button>
                 ${passed
-                    ? `<button class="btn btn-success" onclick="viewCertificate(${currentAssignmentId})">View Certificate 🎓</button>`
+                    ? `<button class="btn btn-success" onclick="viewCertificate(${currentAssignmentId})">View Certificate 🎓</button>
+                       <button class="btn btn-warning" onclick="retestTraining(${currentModuleId}, ${currentAssignmentId})">Retest Training 🔄</button>`
                     : `<button class="btn btn-secondary" onclick="startModule(${currentModuleId}, ${currentAssignmentId})">Review Training</button>
                        <button class="btn btn-warning" onclick="showQuizView()">Retake Assessment</button>`
                 }

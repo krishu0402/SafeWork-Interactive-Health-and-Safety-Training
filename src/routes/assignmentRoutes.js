@@ -260,6 +260,31 @@ router.post('/:id/submit', requireAuth, async (req, res) => {
     }
 });
 
+// PUT /api/assignments/:id/reset — Worker resets a passed assignment to retake it
+router.put('/:id/reset', requireAuth, async (req, res) => {
+    try {
+        const assignment = await get(
+            `SELECT * FROM assignments WHERE id = ? AND user_id = ?`,
+            [req.params.id, req.session.userId]
+        );
+        if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
+
+        // Reset status and score; preserve attempt_count history
+        await run(`UPDATE assignments SET status = 'In Progress', score = NULL, completed_date = NULL WHERE id = ?`, [req.params.id]);
+
+        // Remove existing certificate so a fresh one can be issued on next pass
+        await run(`DELETE FROM certificates WHERE assignment_id = ?`, [req.params.id]);
+
+        await run(`INSERT INTO audit_logs (user_id, action, entity, entity_id) VALUES (?, ?, ?, ?)`,
+            [req.session.userId, 'RESET', 'Assignment', req.params.id]);
+
+        res.json({ message: 'Assignment reset. You can now retake the training.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // GET /api/assignments/:id/certificate — Serve certificate as HTML
 router.get('/:id/certificate', requireAuth, async (req, res) => {
     try {

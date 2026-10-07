@@ -200,11 +200,14 @@
 
                     <div id="scenario-feedback" class="alert hidden" style="margin-top:15px;"></div>
 
-                    <div style="display:flex; gap:15px; margin-top:20px; flex-wrap:wrap;">
+                    <div style="display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; align-items:center;">
                         <button id="btn-proceed-quiz" class="btn btn-success" style="display:none;" onclick="showQuizView()">
                             Proceed to Assessment →
                         </button>
-                        <button class="btn btn-secondary" onclick="showTraining(null)">Save &amp; Exit</button>
+                        <button class="btn btn-secondary btn-sm" onclick="restartScenario()" title="Reset all hotspots and investigation panels">
+                            🔄 Reset Scenario
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="showTraining(null)">Save &amp; Exit</button>
                     </div>
                 </div>
             </div>
