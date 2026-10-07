@@ -22,9 +22,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# Local Development & Tool Scratch Artifacts
-.gemini/
-.antigravity/
+# Local Development & Tool Scratch
 scratch/
 tmp/
 temp/

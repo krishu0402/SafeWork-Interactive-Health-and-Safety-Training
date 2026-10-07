@@ -26,8 +26,8 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Update last login
-        await run(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?`, [user.id]);
+        // Update last login (ISO UTC timestamp)
+        await run(`UPDATE users SET last_login = ? WHERE id = ?`, [new Date().toISOString(), user.id]);
 
         // Audit Log
         await run(`INSERT INTO audit_logs (user_id, action, entity, entity_id) VALUES (?, ?, ?, ?)`, 

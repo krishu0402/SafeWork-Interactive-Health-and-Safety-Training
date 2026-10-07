@@ -16,6 +16,12 @@ const InteractiveEngine = (() => {
     let totalHotspots = 0;
     let onAllComplete = null;
     let sceneFeedbackEl = null;
+    let scenarioLabels = {
+        completeTitle: 'All safety checkpoints completed!',
+        allFoundFeedback: 'All safety checkpoints completed!',
+        singleFoundFeedback: 'Checkpoint completed!',
+        progressWord: 'completed'
+    };
 
     // ── Init ───────────────────────────────────────────────────────────
     function init() {
@@ -225,7 +231,7 @@ const InteractiveEngine = (() => {
             <div class="scenario-progress">
                 <div class="scenario-progress-steps">${stepsHtml}</div>
                 <div class="scenario-progress-label">
-                    <strong>${completedHotspots.size}</strong> / ${total} identified
+                    <strong>${completedHotspots.size}</strong> / ${total} ${scenarioLabels.progressWord || 'completed'}
                 </div>
             </div>
         `;
@@ -263,7 +269,7 @@ const InteractiveEngine = (() => {
         });
 
         if (label) {
-            label.innerHTML = `<strong>${completedHotspots.size}</strong> / ${totalHotspots} identified`;
+            label.innerHTML = `<strong>${completedHotspots.size}</strong> / ${totalHotspots} ${scenarioLabels.progressWord || 'completed'}`;
         }
 
         // Update hazard counter if present
@@ -289,7 +295,7 @@ const InteractiveEngine = (() => {
         overlay.className = 'scene-complete-overlay';
         overlay.innerHTML = `
             <div class="scene-complete-icon">🎉</div>
-            <div class="scene-complete-text">All hazards identified!</div>
+            <div class="scene-complete-text">${scenarioLabels.completeTitle || 'All safety checkpoints completed!'}</div>
             <div class="scene-complete-sub">Well done. You may now proceed to the assessment.</div>
         `;
         scene.appendChild(overlay);
@@ -306,9 +312,9 @@ const InteractiveEngine = (() => {
         if (isCorrect) {
             feedbackEl.className = 'alert alert-success';
             if (completedHotspots.size >= totalHotspots) {
-                feedbackEl.innerHTML = `<strong>✅ All ${totalHotspots} hazards identified!</strong> Well done. You are ready to take the assessment.`;
+                feedbackEl.innerHTML = `<strong>✅ ${scenarioLabels.allFoundFeedback || `All ${totalHotspots} safety checkpoints completed!`}</strong> Well done. You are ready to take the assessment.`;
             } else {
-                feedbackEl.innerHTML = `<strong>✅ Hazard identified!</strong> ${message}`;
+                feedbackEl.innerHTML = `<strong>✅ ${scenarioLabels.singleFoundFeedback || 'Checkpoint completed!'}</strong> ${message}`;
             }
         } else {
             feedbackEl.className = 'alert alert-error';
@@ -377,10 +383,16 @@ const InteractiveEngine = (() => {
     }
 
     // ── Reset ──────────────────────────────────────────────────────────
-    function reset() {
+    function reset(customLabels) {
         completedHotspots.clear();
         totalHotspots = 0;
         onAllComplete = null;
+        scenarioLabels = customLabels || {
+            completeTitle: 'All safety checkpoints completed!',
+            allFoundFeedback: 'All safety checkpoints completed!',
+            singleFoundFeedback: 'Checkpoint completed!',
+            progressWord: 'completed'
+        };
         closePanel();
         hideTooltip();
     }
@@ -396,7 +408,12 @@ const InteractiveEngine = (() => {
 
     // ── Hazard Awareness ───────────────────────────────────────────────
     function buildHazardAwarenessScene(containerEl, onComplete) {
-        reset();
+        reset({
+            completeTitle: 'All hazards identified!',
+            allFoundFeedback: 'All 3 hazards identified!',
+            singleFoundFeedback: 'Hazard identified!',
+            progressWord: 'identified'
+        });
         onAllComplete = onComplete;
         totalHotspots = 3;
 
@@ -498,7 +515,12 @@ const InteractiveEngine = (() => {
 
     // ── Manual Handling ────────────────────────────────────────────────
     function buildManualHandlingScene(containerEl, onComplete) {
-        reset();
+        reset({
+            completeTitle: 'All safety checkpoints completed!',
+            allFoundFeedback: 'All 4 safety checkpoints completed!',
+            singleFoundFeedback: 'Checkpoint completed!',
+            progressWord: 'completed'
+        });
         onAllComplete = onComplete;
         totalHotspots = 4;
 
@@ -656,7 +678,12 @@ const InteractiveEngine = (() => {
 
     // ── PPE Awareness ──────────────────────────────────────────────────
     function buildPPEScene(containerEl, onComplete) {
-        reset();
+        reset({
+            completeTitle: 'All safety checkpoints completed!',
+            allFoundFeedback: 'All 5 safety checkpoints completed!',
+            singleFoundFeedback: 'Checkpoint completed!',
+            progressWord: 'completed'
+        });
         onAllComplete = onComplete;
 
         const ppeItems = [
@@ -769,7 +796,12 @@ const InteractiveEngine = (() => {
 
     // ── Fire Safety ────────────────────────────────────────────────────
     function buildFireSafetyScene(containerEl, onComplete) {
-        reset();
+        reset({
+            completeTitle: 'All safety checkpoints completed!',
+            allFoundFeedback: 'All 4 safety checkpoints completed!',
+            singleFoundFeedback: 'Checkpoint completed!',
+            progressWord: 'completed'
+        });
         onAllComplete = onComplete;
         totalHotspots = 4;
 
@@ -896,7 +928,12 @@ const InteractiveEngine = (() => {
 
     // ── Moving Vehicles & Equipment ────────────────────────────────────
     function buildVehicleScene(containerEl, onComplete) {
-        reset();
+        reset({
+            completeTitle: 'All safety checkpoints completed!',
+            allFoundFeedback: 'All 4 safety checkpoints completed!',
+            singleFoundFeedback: 'Checkpoint completed!',
+            progressWord: 'completed'
+        });
         onAllComplete = onComplete;
         totalHotspots = 4;
 

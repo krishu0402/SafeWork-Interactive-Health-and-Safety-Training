@@ -137,29 +137,28 @@ async function runEdgeCaseTests() {
         }
 
         // 8. Due yesterday -> Overdue logic
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+        function getLocalDateStr(d) {
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+        const now = new Date();
+        const yesterday = getLocalDateStr(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+        const today = getLocalDateStr(now);
+        const tomorrow = getLocalDateStr(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
         const isPastDueY = (d) => new Date(`${d}T23:59:59`) < new Date();
         record(8, 'Due yesterday is evaluated as overdue', isPastDueY(yesterday) === true);
 
         // 9. Due today -> NOT Overdue logic
-        const today = new Date().toISOString().split('T')[0];
         record(9, 'Due today is NOT evaluated as overdue', isPastDueY(today) === false);
 
         // 10. Due tomorrow -> NOT Overdue logic
-        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
         record(10, 'Due tomorrow is NOT evaluated as overdue', isPastDueY(tomorrow) === false);
 
         // 11. Certificate HTML injection test
-        // Use passedAssign2 (PPE Awareness which still has its certificate intact)
-        if (passedAssign2) {
-            const certRes = await makeRequest('GET', `/api/assignments/${passedAssign2.id}/certificate`, null, workerCookie);
-            const html = typeof certRes.body === 'string' ? certRes.body : '';
-            const containsRawScript = html.includes('<script>alert');
-            const hasEscapeFunction = !containsRawScript && certRes.status === 200;
-            record(11, 'Certificate HTML injection sanitized', hasEscapeFunction, `Status ${certRes.status}`);
-        } else {
-            record(11, 'Certificate HTML injection sanitized', true);
-        }
+        const certRes = await makeRequest('GET', `/api/assignments/6/certificate`, null, worker2Cookie);
+        const html = typeof certRes.body === 'string' ? certRes.body : '';
+        const containsRawScript = html.includes('<script>alert');
+        const hasEscapeFunction = !containsRawScript && certRes.status === 200;
+        record(11, 'Certificate HTML injection sanitized', hasEscapeFunction, `Status ${certRes.status}`);
 
         // 12. CSV formula / quote escaping test
         function csvValue(value) {

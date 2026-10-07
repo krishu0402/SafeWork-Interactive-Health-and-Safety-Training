@@ -142,7 +142,10 @@ async function showProfile(e) {
         document.getElementById('profile-email').innerText = user.email;
         document.getElementById('profile-dept').innerText = user.department || '-';
         if (user.last_login) {
-            document.getElementById('profile-login').innerText = new Date(user.last_login).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const isoStr = (typeof user.last_login === 'string' && !user.last_login.includes('T') && !user.last_login.endsWith('Z'))
+                ? user.last_login.replace(' ', 'T') + 'Z'
+                : user.last_login;
+            document.getElementById('profile-login').innerText = new Date(isoStr).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         } else {
             document.getElementById('profile-login').innerText = '-';
         }
@@ -632,7 +635,11 @@ function renderScenarioForModule(title) {
         const feedback = document.getElementById('scenario-feedback');
         feedback.className = 'alert alert-success';
         feedback.classList.remove('hidden');
-        feedback.innerHTML = '<strong>✅ All elements identified!</strong> Well done. You are ready to take the assessment.';
+        if (title === 'Hazard Awareness') {
+            feedback.innerHTML = '<strong>✅ All hazards identified!</strong> Well done. You are ready to take the assessment.';
+        } else {
+            feedback.innerHTML = '<strong>✅ All safety checkpoints completed!</strong> Well done. You are ready to take the assessment.';
+        }
     };
 
     if (title === 'Hazard Awareness') {
